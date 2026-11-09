@@ -52,4 +52,6 @@ La structure s'enrichira avec le mod Core (code Java, ressources, shaders GLSL) 
 
 ## Licence
 
-À définir.
+Copyright (c) 2026 Ender-Breaker. Tous droits réservés.
+
+Ce projet est **propriétaire**. Aucune licence d'utilisation n'est accordée : il est interdit d'utiliser, copier, modifier, fusionner, publier, distribuer ou sous-licencier tout ou partie du code, des shaders, des ressources et de la documentation de ce dépôt sans l'autorisation écrite préalable de l'auteur.

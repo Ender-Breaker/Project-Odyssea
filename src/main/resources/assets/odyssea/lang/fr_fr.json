@@ -1,0 +1,6 @@
+{
+  "death.attack.odyssea.hypoxia": "%1$s a manqué d'air",
+  "death.attack.odyssea.hypoxia.player": "%1$s a manqué d'air en fuyant %2$s",
+  "odyssea.atmosphere.hypoxia": "Hypoxie : pression partielle d'oxygène insuffisante",
+  "odyssea.atmosphere.hypoxia.critical": "HYPOXIE CRITIQUE : trouvez de l'air pressurisé ou fermez votre casque"
+}

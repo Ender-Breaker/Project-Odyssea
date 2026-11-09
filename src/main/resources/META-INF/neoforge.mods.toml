@@ -1,0 +1,35 @@
+modLoader = "javafml"
+loaderVersion = "[4,)"
+license = "All Rights Reserved"
+
+[[mods]]
+modId = "odyssea"
+version = "0.1.0"
+displayName = "Odyssea Core"
+description = '''
+Core infrastructure for Project Odyssea: block-built ships, pressurization, pipe networks and celestial rendering.
+'''
+
+[[mixins]]
+config = "odyssea.mixins.json"
+
+[[dependencies.odyssea]]
+modId = "neoforge"
+type = "required"
+versionRange = "[21.1,)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.odyssea]]
+modId = "minecraft"
+type = "required"
+versionRange = "[1.21.1,1.21.2)"
+ordering = "NONE"
+side = "BOTH"
+
+[[dependencies.odyssea]]
+modId = "veil"
+type = "required"
+versionRange = "[0,)"
+ordering = "AFTER"
+side = "CLIENT"

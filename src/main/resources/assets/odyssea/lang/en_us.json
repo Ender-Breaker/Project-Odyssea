@@ -1,0 +1,6 @@
+{
+  "death.attack.odyssea.hypoxia": "%1$s ran out of air",
+  "death.attack.odyssea.hypoxia.player": "%1$s ran out of air while fleeing %2$s",
+  "odyssea.atmosphere.hypoxia": "Hypoxia: oxygen partial pressure too low",
+  "odyssea.atmosphere.hypoxia.critical": "CRITICAL HYPOXIA: find pressurized air or seal your helmet"
+}

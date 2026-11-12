@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:cache_once",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": "odyssea:mercury/slope",
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": 0.25,
+      "argument2": {
+        "type": "minecraft:noise",
+        "noise": "odyssea:planet/crag",
+        "xz_scale": 1.0,
+        "y_scale": 0.7
+      }
+    }
+  }
+}

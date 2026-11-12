@@ -28,7 +28,7 @@ public record PlanetaryAtmosphere(
 
     public static final PlanetaryAtmosphere VACUUM = new PlanetaryAtmosphere(
             0.0, 63.0, 1.0, 0.0, 3.0, 287.05, 0.0,
-            new Scattering(new Vector3f(), 1.0f, new Vector3f(), new Vector3f(), 1.0f, 0.0f, new Vector3f(), 1.0f, 0.0f));
+            new Scattering(new Vector3f(), 1.0f, new Vector3f(), new Vector3f(), 1.0f, new Vector3f(), new Vector3f(), 1.0f, 0.0f));
 
     public PlanetaryAtmosphere {
         if (surfacePressurePa < 0.0 || pressureScaleHeightBlocks <= 0.0 || temperatureK <= 0.0 || specificGasConstant <= 0.0) {
@@ -37,14 +37,19 @@ public record PlanetaryAtmosphere(
         oxygenFraction = Math.clamp(oxygenFraction, 0.0, 1.0);
     }
 
-    /** Coefficients en km⁻¹ au niveau de la mer ; le shader applique le profil exp(−h/H). */
+    /**
+     * Coefficients en km⁻¹ au niveau de la mer ; le shader applique le profil exp(−h/H).
+     *
+     * @param mieAnisotropy paramètre g de la fonction de phase, par canal (R, V, B) : des poussières qui diffusent le
+     *                      bleu plus vers l'avant donnent le halo bleu des couchers de soleil martiens
+     */
     public record Scattering(
             Vector3fc rayleighPerKm,
             float rayleighScaleHeightKm,
             Vector3fc mieScatteringPerKm,
             Vector3fc mieExtinctionPerKm,
             float mieScaleHeightKm,
-            float mieAnisotropy,
+            Vector3fc mieAnisotropy,
             Vector3fc absorptionPerKm,
             float planetRadiusKm,
             float thicknessKm) {
@@ -54,8 +59,12 @@ public record PlanetaryAtmosphere(
         }
     }
 
-    public record Aerosols(Vector3fc scatteringPerKm, Vector3fc extinctionPerKm, float scaleHeightKm, float anisotropy) {
+    public record Aerosols(Vector3fc scatteringPerKm, Vector3fc extinctionPerKm, float scaleHeightKm, Vector3fc anisotropy) {
         public static final Aerosols NONE = new Aerosols(new Vector3f(), new Vector3f(), 1.0f, 0.0f);
+
+        public Aerosols(Vector3fc scatteringPerKm, Vector3fc extinctionPerKm, float scaleHeightKm, float anisotropy) {
+            this(scatteringPerKm, extinctionPerKm, scaleHeightKm, new Vector3f(anisotropy));
+        }
     }
 
     /** Réfractivité (n − 1) aux conditions normales (273,15 K, 1 atm) et facteur de King (dépolarisation). */
@@ -130,7 +139,7 @@ public record PlanetaryAtmosphere(
         Scattering scattering = new Scattering(
                 rayleigh, Math.max(scaleHeightKm, 0.1f),
                 new Vector3f(aerosols.scatteringPerKm()), new Vector3f(aerosols.extinctionPerKm()),
-                aerosols.scaleHeightKm(), aerosols.anisotropy(),
+                aerosols.scaleHeightKm(), new Vector3f(aerosols.anisotropy()),
                 absorption, planetRadiusKm, thicknessKm);
         return new PlanetaryAtmosphere(surfacePressurePa, seaLevelY, pressureScaleHeightBlocks, oxygen,
                 temperatureK, specificGasConstant, gravity, scattering);
@@ -144,6 +153,12 @@ public record PlanetaryAtmosphere(
         double lambda2 = wavelength * wavelength;
         return 32.0 * Math.PI * Math.PI * Math.PI / 3.0 * refractivity * refractivity
                 / (numberDensity * lambda2 * lambda2) * king * 1000.0;
+    }
+
+    /** Même atmosphère pour le jeu (pression, O₂…), diffusion remplacée pour le rendu. */
+    public PlanetaryAtmosphere withScattering(Scattering visual) {
+        return new PlanetaryAtmosphere(surfacePressurePa, seaLevelY, pressureScaleHeightBlocks, oxygenFraction,
+                temperatureK, specificGasConstant, gravity, visual);
     }
 
     public double pressureAt(double y) {

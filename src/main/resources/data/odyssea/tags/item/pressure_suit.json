@@ -1,3 +1,8 @@
 {
-  "values": []
+  "values": [
+    "odyssea:space_helmet",
+    "odyssea:space_suit",
+    "odyssea:space_leggings",
+    "odyssea:space_boots"
+  ]
 }

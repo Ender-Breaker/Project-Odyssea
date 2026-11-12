@@ -740,6 +740,11 @@ public final class AtmosphereManager extends SavedData {
         SealedRoom room = roomAt(BlockPos.asLong(Mth.floor(entity.getX()), Mth.floor(eyeY), Mth.floor(entity.getZ())));
         double pressure = room != null ? room.pressurePa() : ambient.pressureAt(eyeY);
         double oxygenFraction = room != null ? AIR_OXYGEN_FRACTION : ambient.oxygenFraction();
+        // Cabine d'un vaisseau : pressurisée tant que la coque tient.
+        if (entity.getVehicle() instanceof odyssea.ship.ShipEntity ship && ship.hull() > 0.0f) {
+            pressure = TARGET_PRESSURE_PA;
+            oxygenFraction = AIR_OXYGEN_FRACTION;
+        }
         boolean suited = hasSealedSuit(entity);
         double partialO2 = suited ? Double.POSITIVE_INFINITY : pressure * oxygenFraction;
         float current = hypoxia.getFloat(id);
@@ -800,8 +805,20 @@ public final class AtmosphereManager extends SavedData {
                 return false;
             }
         }
+        // Combinaison Odyssea : étanche tant que sa réserve d'oxygène n'est pas vide.
+        if (!odyssea.suit.SpaceSuitItem.hasOxygen(entity)) {
+            return false;
+        }
         CustomData data = entity.getItemBySlot(EquipmentSlot.HEAD).get(DataComponents.CUSTOM_DATA);
         return data == null || !data.copyTag().getBoolean(VISOR_OPEN_KEY);
+    }
+
+    /** Vrai si l'entité respire sans aide à cet endroit (air ambiant, salle pressurisée ou cabine de vaisseau). */
+    public boolean canBreatheUnaided(ServerLevel level, LivingEntity entity) {
+        if (entity.getVehicle() instanceof odyssea.ship.ShipEntity ship && ship.hull() > 0.0f) {
+            return true;
+        }
+        return isBreathable(level, BlockPos.containing(entity.getX(), entity.getEyeY(), entity.getZ()));
     }
 
     // ───────────────────────────── Index et utilitaires ─────────────────────────────

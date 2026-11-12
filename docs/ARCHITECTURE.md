@@ -80,8 +80,14 @@ odyssea-core/
     │   │
     │   ├── dimension/                    ── données planétaires partagées serveur/client
     │   │   ├── PlanetaryAtmosphere       composition → pression(y), O₂, Rayleigh/Mie dérivés des gaz
-    │   │   └── PlanetaryAtmospheres      registre dimension → atmosphère
+    │   │   ├── PlanetaryAtmospheres      atmosphères du système solaire, registre dimension → atmosphère
+    │   │   └── Planets                   corps dotés d'une dimension : gravité, durée du jour, distance au Soleil
     │   │   (à venir : SeamlessTransitionController, OrbitalCoordinateMapper, GravityField)
+    │   │
+    │   ├── worldgen/                     ── relief des planètes (voir docs/WORLDGEN.md)
+    │   │   ├── density/                  odyssea:fractal, craters, volcanoes, terrace, carve
+    │   │   ├── noise/                    simplex 2D à gradient analytique, sommes fractales
+    │   │   └── preview/                  /odyssea preview et serveur de prévisualisation
     │   │
     │   ├── atmosphere/                   ── survie (serveur uniquement)
     │   │   ├── AtmosphereManager         SavedData par niveau : diffuseurs, pièces, brèches, organismes
@@ -187,15 +193,15 @@ Le pool d'atmosphère compte `min(4, cœurs/4)` threads démons de priorité ré
 
 ---
 
-## 4. Transition sol-espace
+## 4. Transition sol-espace (implémentée, voir `docs/SHIPS.md`)
 
-**Contrainte réelle.** Le client ne détient qu'un seul `ClientLevel`. Tout changement de dimension envoie un `ClientboundRespawnPacket`, qui détruit le niveau client et en recrée un. Un voyage « sans écran de chargement visible » est donc forcément **masqué**, jamais réellement continu. C'est aussi ce que font les vidéos de référence.
+**Contrainte réelle.** Le client ne détient qu'un seul `ClientLevel`. Tout changement de dimension envoie un `ClientboundRespawnPacket`, qui détruit le niveau client et en recrée un : le passage est bref, jamais réellement continu.
 
-1. **Hauteur** : `dimension_type` des planètes avec `min_y = -64` et `height = 1728`, soit un plafond à Y = 1664. La limite vanilla est `height ≤ 4064`. Les sections vides au-dessus du relief ne coûtent presque rien.
-2. **Anticipation** : à partir de Y > 1100 en montée, le serveur pose un ticket de chunks dans la dimension `odyssea:orbit` à la position cible (calculée par `OrbitalCoordinateMapper`). Les chunks sont prêts avant le transfert.
-3. **Masquage** : de Y = 1150 à 1200, l'uniform de brouillard volumétrique (et le plasma de rentrée à la descente) monte jusqu'à l'opacité totale. Un mixin sur `ReceivingLevelScreen` remplace l'écran vanilla par l'overlay du shader, qui continue d'être dessiné pendant le respawn.
-4. **Continuité** : on conserve la vitesse (vecteur projeté dans le repère orbital), l'orientation de la caméra et le vaisseau entier (backend sub-level : copie du shipyard dans la dimension cible).
-5. **Rendu** : `AtmosphereRenderPass` utilise la même échelle verticale (`visualKmPerBlock`) des deux côtés. À Y = 1200 le ciel planétaire est déjà presque noir et le limbe visible, ce qui rend le raccord avec la vue orbitale cohérent.
+1. **Hauteur** : toutes les dimensions vont de Y = −64 à Y = 2031, la limite du moteur.
+2. **Espace** : la dimension `odyssea:space` contient le système solaire entier, comprimé (`space.SpaceSystem` : un bloc = un km visuel, Soleil à l'origine, Terre à 100 000 blocs). Monter au-dessus de Y = 1960 sur une planète mène dans l'espace au-dessus du même point de la sphère ; franchir le sommet d'une atmosphère dans l'espace mène à Y = 1850 dans la dimension de la planète (longitude → X, latitude → Z).
+3. **Continuité** : vitesse et orientation sont transportées dans le repère tangent local (est, haut, nord), le vaisseau garde ses passagers (`Entity.changeDimension` les transfère et les rassoit).
+4. **Rendu** : dans l'espace, `AtmosphereRenderPass` passe en mode héliocentrique : la caméra est à sa position réelle dans le système, le Soleil change de diamètre et d'éclairement avec la distance, les planètes sont dessinées avec leur atmosphère et leurs anneaux.
+5. **Saut quantique** : le vaisseau reste physiquement au départ pendant le trajet ; le ciel est dessiné depuis le point atteint (`ShipControls.quantumOffset`), puis le serveur téléporte le vaisseau et son équipage à l'arrivée.
 
 ---
 
@@ -207,10 +213,15 @@ Le pool d'atmosphère compte `min(4, cœurs/4)` threads démons de priorité ré
 
 ---
 
-## 6. Contenu de ce dépôt et prochaines étapes
+## 6. Contenu de ce dépôt
 
-**Fourni et complet** : atmosphère et pressurisation (Partie 2), modèle physique et bouclier (Partie 3), shader et passe Veil (Partie 4), graphe de fluides et d'énergie (Partie 5), mixin, enregistrement NeoForge, données (damage type, tags, langues).
+- **Atmosphère et pressurisation**, **graphe de fluides**, **modèle physique et bouclier** (parties 2, 3, 5).
+- **Ciels planétaires** (passe Veil, `render.veil`), **génération des mondes** (`worldgen`, voir `docs/WORLDGEN.md`).
+- **Vaisseaux** (`ship`) : structure lue d'une schématique Sponge (`SchematicReader`, `ShipStructure`), modèles du datapack (`ShipDesigns`), entité pilotable (`ShipEntity`, vol `ShipFlight`, pirates `PirateBrain`), tirs (`ShipProjectile`), balises de déploiement.
+- **Espace** (`space`) : système solaire pilotable, navigation, rencontres ; astéroïdes (`worldgen.feature.AsteroidFeature`).
+- **Combinaison spatiale** (`suit`) : oxygène, gravité par corps, sortie extravéhiculaire.
+- **Horizon** (`horizon.HorizonSampler` côté serveur, `client.HorizonClient` côté client).
+- **Réseau** (`network.OdysseaNetwork`) : état du pilote, actions, interactions, téléportation, horizon.
+- **Client** (`client.ship`, `client.map`) : rendu des vaisseaux (maillages en cache par modèle), HUD, commandes, carte du système.
 
-**Pas encore écrit** : `ShipBackend` et son implémentation, block entities (diffuseur, tuyaux, propulseurs, consoles), payloads réseau (HUD de pression, synchro des vaisseaux), filtre acoustique, contrôleur de transition.
-
-**Intégration** : copier `src/` dans le MDK officiel *NeoForge 1.21.1 ModDevGradle* et ajouter Veil (`maven.blamejared.com`, artefact `foundry.veil:veil-neoforge-1.21.1`) en dépendance `implementation`.
+Le vaisseau de ce dépôt est une **entité** (pas un sous-niveau de blocs) : on n'y marche pas en vol, l'équipage est assis. La cabine est considérée comme pressurisée tant que la coque tient.

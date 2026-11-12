@@ -1,0 +1,38 @@
+{
+  "schematic": "odyssea:cutlass",
+  "forward": "+x",
+  "camera_distance": 46,
+  "seats": [
+    [45.5, 6.1, 19.5],
+    [43.5, 7.1, 19.5],
+    [26.5, 4.6, 17.5],
+    [26.5, 4.6, 21.5],
+    [20.5, 4.6, 17.5],
+    [20.5, 4.6, 21.5],
+    [14.5, 4.6, 17.5],
+    [14.5, 4.6, 21.5]
+  ],
+  "engines": [
+    [7.5, 7.0, 4.5],
+    [7.5, 7.0, 34.5],
+    [7.5, 5.5, 19.5]
+  ],
+  "guns": [
+    [53.0, 1.5, 6.5],
+    [53.0, 1.5, 32.5]
+  ],
+  "missiles": [
+    [46.0, 0.5, 6.5],
+    [46.0, 0.5, 32.5]
+  ],
+  "stats": {
+    "hull": 3000, "shield": 1800, "shield_regen": 120, "shield_delay": 4,
+    "energy": 1200, "energy_regen": 160,
+    "fuel": 1200, "fuel_burn": 3.0, "quantum_fuel": 120,
+    "max_speed": 210, "boost_speed": 380,
+    "accel_forward": 32, "accel_back": 20, "accel_strafe": 18, "accel_vertical": 24,
+    "turn_rate": 1.1, "roll_rate": 1.6, "angular_accel": 2.4,
+    "gun_damage": 9, "gun_cooldown": 4, "gun_energy": 12, "bolt_speed": 360, "bolt_color": "FF4030",
+    "missile_damage": 40, "missile_explosion": 3.0, "missiles": 8, "missile_cooldown": 30
+  }
+}

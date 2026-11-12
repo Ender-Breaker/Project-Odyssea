@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "odyssea:anorthosite",
+    "odyssea:lunar_basalt",
+    "odyssea:mercurian_rock",
+    "odyssea:venusian_basalt",
+    "odyssea:martian_rock",
+    "odyssea:martian_basalt"
+  ]
+}

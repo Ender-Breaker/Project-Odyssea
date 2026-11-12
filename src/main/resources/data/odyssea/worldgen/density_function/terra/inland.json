@@ -1,0 +1,39 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": "odyssea:terra/continents",
+        "points": [
+          {
+            "location": -0.21,
+            "value": 0.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.15,
+            "value": 0.22,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.11,
+            "value": 0.45,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.03,
+            "value": 0.82,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.25,
+            "value": 1.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    }
+  }
+}

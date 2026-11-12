@@ -1,0 +1,46 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:add",
+          "argument1": {
+            "type": "minecraft:add",
+            "argument1": {
+              "type": "minecraft:add",
+              "argument1": "odyssea:terra/base",
+              "argument2": "odyssea:terra/mountains"
+            },
+            "argument2": "odyssea:terra/hills"
+          },
+          "argument2": "odyssea:terra/plateaus"
+        },
+        "argument2": "odyssea:terra/seafloor"
+      },
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": {
+          "type": "odyssea:fractal",
+          "noise": "odyssea:seed",
+          "salt": "terra/detail",
+          "mode": "fbm",
+          "scale": 48.0,
+          "octaves": 3
+        },
+        "argument2": {
+          "type": "minecraft:add",
+          "argument1": 1.5,
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": 4.0,
+            "argument2": "odyssea:terra/mountain_envelope"
+          }
+        }
+      }
+    }
+  }
+}

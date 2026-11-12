@@ -1,0 +1,31 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:add",
+          "argument1": 0.12,
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": 1.3,
+            "argument2": "odyssea:terra/mountain_envelope"
+          }
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": 0.012,
+          "argument2": "odyssea:terra/hills"
+        }
+      },
+      "argument2": {
+        "type": "minecraft:mul",
+        "argument1": 0.006,
+        "argument2": "odyssea:terra/plateaus"
+      }
+    }
+  }
+}

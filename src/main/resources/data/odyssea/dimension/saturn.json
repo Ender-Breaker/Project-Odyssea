@@ -1,0 +1,18 @@
+{
+  "type": "odyssea:saturn",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "odyssea:saturn_cloud_deck",
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 1
+        }
+      ],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "replace": false,
+  "values": [
+    "odyssea:anorthosite",
+    "odyssea:lunar_basalt",
+    "odyssea:mercurian_rock",
+    "odyssea:hollow_crust",
+    "odyssea:venusian_basalt",
+    "odyssea:sulfur_crust",
+    "odyssea:martian_rock",
+    "odyssea:martian_basalt",
+    "odyssea:dry_ice",
+    "odyssea:uranian_ice",
+    "odyssea:methane_ice",
+    "odyssea:ammonia_ice"
+  ]
+}

@@ -1,0 +1,30 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "equipment",
+  "pattern": [
+    "NSN",
+    "BCB",
+    "NQN"
+  ],
+  "key": {
+    "N": {
+      "item": "minecraft:netherite_ingot"
+    },
+    "S": {
+      "item": "minecraft:nether_star"
+    },
+    "B": {
+      "item": "minecraft:diamond_block"
+    },
+    "C": {
+      "item": "odyssea:cutlass_beacon"
+    },
+    "Q": {
+      "item": "odyssea:quantum_cell"
+    }
+  },
+  "result": {
+    "id": "odyssea:destroyer_beacon",
+    "count": 1
+  }
+}

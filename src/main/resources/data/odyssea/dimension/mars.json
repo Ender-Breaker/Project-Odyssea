@@ -1,0 +1,174 @@
+{
+  "type": "odyssea:mars",
+  "generator": {
+    "type": "minecraft:noise",
+    "settings": "odyssea:mars",
+    "biome_source": {
+      "type": "minecraft:multi_noise",
+      "biomes": [
+        {
+          "biome": "odyssea:mars_polar_cap",
+          "parameters": {
+            "temperature": [
+              -1.0,
+              -0.2
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "odyssea:mars_volcanic_plains",
+          "parameters": {
+            "temperature": [
+              -0.2,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              1.0
+            ],
+            "weirdness": [
+              0.0,
+              1.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "odyssea:mars_canyon",
+          "parameters": {
+            "temperature": [
+              -0.2,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              0.0,
+              1.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "odyssea:mars_dune_sea",
+          "parameters": {
+            "temperature": [
+              -0.2,
+              1.0
+            ],
+            "humidity": [
+              0.0,
+              1.0
+            ],
+            "continentalness": [
+              -1.0,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              0.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "odyssea:mars_southern_highlands",
+          "parameters": {
+            "temperature": [
+              -0.2,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              0.0
+            ],
+            "continentalness": [
+              0.0,
+              1.0
+            ],
+            "erosion": [
+              -1.0,
+              0.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        },
+        {
+          "biome": "odyssea:mars_northern_plains",
+          "parameters": {
+            "temperature": [
+              -0.2,
+              1.0
+            ],
+            "humidity": [
+              -1.0,
+              0.0
+            ],
+            "continentalness": [
+              -1.0,
+              0.0
+            ],
+            "erosion": [
+              -1.0,
+              0.0
+            ],
+            "weirdness": [
+              -1.0,
+              0.0
+            ],
+            "depth": 0.0,
+            "offset": 0.0
+          }
+        }
+      ]
+    }
+  }
+}

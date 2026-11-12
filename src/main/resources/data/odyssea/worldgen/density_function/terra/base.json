@@ -1,0 +1,99 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": "odyssea:terra/continents",
+        "points": [
+          {
+            "location": -1.2,
+            "value": 72.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -1.1,
+            "value": 67.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -1.05,
+            "value": 38.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.98,
+            "value": 24.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.75,
+            "value": 18.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.55,
+            "value": 24.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.455,
+            "value": 32.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.32,
+            "value": 42.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.22,
+            "value": 50.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.19,
+            "value": 54.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.15,
+            "value": 60.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.11,
+            "value": 64.5,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.05,
+            "value": 69.5,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.03,
+            "value": 74.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.3,
+            "value": 85.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.6,
+            "value": 97.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 1.0,
+            "value": 110.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    }
+  }
+}

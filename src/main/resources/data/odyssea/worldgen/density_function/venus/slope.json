@@ -1,0 +1,15 @@
+{
+  "type": "minecraft:add",
+  "argument1": {
+    "type": "minecraft:mul",
+    "argument1": "odyssea:venus/height",
+    "argument2": 0.125
+  },
+  "argument2": {
+    "type": "minecraft:y_clamped_gradient",
+    "from_y": -64,
+    "to_y": 448,
+    "from_value": 8.0,
+    "to_value": -56.0
+  }
+}

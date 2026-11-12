@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "odyssea:block/ice_slush"
+      },
+      {
+        "model": "odyssea:block/ice_slush",
+        "y": 90
+      },
+      {
+        "model": "odyssea:block/ice_slush",
+        "y": 180
+      },
+      {
+        "model": "odyssea:block/ice_slush",
+        "y": 270
+      }
+    ]
+  }
+}

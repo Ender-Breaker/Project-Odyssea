@@ -1,0 +1,119 @@
+plugins {
+    id 'java-library'
+    id 'net.neoforged.moddev' version '1.0.23' // Vérifie les mises à jour du plugin
+}
+
+tasks.named('wrapper', Wrapper).configure {
+    // Utilise Gradle 8.x qui est requis pour Java 21
+    gradleVersion = '8.10' 
+}
+
+version = project.mod_version
+group = project.mod_group_id
+
+repositories {
+    maven { url = 'https://maven.blamejared.com/' }
+    mavenLocal()
+    mavenCentral()
+}
+
+base {
+    archivesName = project.mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(project.java_version)
+}
+
+// Sources commentées en français : sans cela, javac lit les fichiers en windows-1252 sous Windows.
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+dependencies {
+    implementation "foundry.veil:veil-neoforge-${project.minecraft_version}:${project.veil_version}"
+}
+
+neoForge {
+    // Version de NeoForge spécifiée dans gradle.properties
+    version = project.neo_version
+
+    parchment {
+        // Optionnel : mappings pour des noms de variables plus clairs (laisse commenté si tu débutes)
+        // mappingsVersion = '2024.07.28'
+        // minecraftVersion = '1.21'
+    }
+
+    // Configuration des "Runs" (Client et Serveur)
+    runs {
+        client {
+            client()
+            // Arguments pour le système de modules Java
+            systemProperty 'neoforged.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforged.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // Test de fumée du client : entre dans un monde existant, mesure le chargement et les FPS, puis quitte.
+        // -PsmokeWorld="New World (2)"
+        // -PsmokeTour=odyssea:mercury,odyssea:mars : visite ces dimensions et prend des captures (run/screenshots).
+        // Sans -PsmokeWorld, un monde jetable « odyssea_smoke » est créé (et recréé à chaque test).
+        smokeClient {
+            client()
+            if (project.findProperty('smokeWorld')) {
+                programArguments.addAll('--quickPlaySingleplayer', project.findProperty('smokeWorld'))
+            } else {
+                systemProperty 'odyssea.smokeTest.create', 'true'
+            }
+            systemProperty 'odyssea.smokeTest', 'true'
+            systemProperty 'odyssea.smokeTest.tour', project.findProperty('smokeTour') ?: ''
+        }
+
+        // Serveur sans interface qui génère chaque dimension, rend des aperçus du terrain dans
+        // run/preview/odyssea_previews puis s'arrête (voir PreviewOnStartup). Supprimer run/preview/world
+        // entre deux essais, sinon les chunks déjà générés sont réutilisés.
+        // Options : -PpreviewOnly=overworld,mars  -PpreviewX=2000 -PpreviewZ=-500
+        previewServer {
+            server()
+            gameDirectory = project.file('run/preview')
+            programArgument '--nogui'
+            systemProperty 'odyssea.preview', 'true'
+            systemProperty 'odyssea.preview.only', project.findProperty('previewOnly') ?: ''
+            systemProperty 'odyssea.preview.x', project.findProperty('previewX') ?: '0'
+            systemProperty 'odyssea.preview.z', project.findProperty('previewZ') ?: '0'
+        }
+    }
+
+    mods {
+        // Crée le conteneur pour ton mod
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+// Configuration des ressources (remplace les variables dans mods.toml)
+tasks.withType(ProcessResources).configureEach {
+    var replaceProperties = [
+            minecraft_version   : project.minecraft_version,
+            minecraft_version_range: project.minecraft_version,
+            neo_version         : project.neo_version,
+            neo_version_range   : project.neo_version,
+            loader_version_range: project.neo_version,
+            mod_id              : project.mod_id,
+            mod_name            : project.mod_name,
+            mod_license         : project.mod_license,
+            mod_version         : project.mod_version,
+            mod_authors         : project.mod_authors,
+            mod_description     : project.mod_description
+    ]
+    inputs.properties replaceProperties
+
+    filesMatching(['META-INF/neoforge.mods.toml']) {
+        expand replaceProperties
+    }
+}

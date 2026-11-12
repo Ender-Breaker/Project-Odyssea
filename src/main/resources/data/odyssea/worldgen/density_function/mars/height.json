@@ -1,0 +1,316 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:clamp",
+      "input": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "minecraft:add",
+          "argument1": {
+            "type": "minecraft:add",
+            "argument1": {
+              "type": "minecraft:add",
+              "argument1": {
+                "type": "minecraft:add",
+                "argument1": {
+                  "type": "minecraft:add",
+                  "argument1": {
+                    "type": "minecraft:add",
+                    "argument1": {
+                      "type": "minecraft:add",
+                      "argument1": 66.0,
+                      "argument2": {
+                        "type": "minecraft:mul",
+                        "argument1": 6.0,
+                        "argument2": {
+                          "type": "odyssea:fractal",
+                          "noise": "odyssea:seed",
+                          "salt": "mars/lowlands",
+                          "mode": "fbm",
+                          "scale": 1400.0,
+                          "octaves": 5
+                        }
+                      }
+                    },
+                    "argument2": {
+                      "type": "minecraft:mul",
+                      "argument1": "odyssea:mars/dichotomy",
+                      "argument2": {
+                        "type": "minecraft:add",
+                        "argument1": {
+                          "type": "minecraft:add",
+                          "argument1": {
+                            "type": "minecraft:add",
+                            "argument1": 112.0,
+                            "argument2": {
+                              "type": "minecraft:mul",
+                              "argument1": 24.0,
+                              "argument2": {
+                                "type": "odyssea:fractal",
+                                "noise": "odyssea:seed",
+                                "salt": "mars/highlands",
+                                "mode": "fbm",
+                                "scale": 1100.0,
+                                "octaves": 6,
+                                "erosion": 0.04
+                              }
+                            }
+                          },
+                          "argument2": {
+                            "type": "minecraft:mul",
+                            "argument1": 45.0,
+                            "argument2": {
+                              "type": "minecraft:square",
+                              "argument": {
+                                "type": "odyssea:fractal",
+                                "noise": "odyssea:seed",
+                                "salt": "mars/massifs",
+                                "mode": "ridged",
+                                "scale": 2400.0,
+                                "octaves": 5,
+                                "warp": 500.0,
+                                "warp_scale": 2400.0
+                              }
+                            }
+                          }
+                        },
+                        "argument2": {
+                          "type": "minecraft:mul",
+                          "argument1": -1.0,
+                          "argument2": {
+                            "type": "minecraft:add",
+                            "argument1": 66.0,
+                            "argument2": {
+                              "type": "minecraft:mul",
+                              "argument1": 6.0,
+                              "argument2": {
+                                "type": "odyssea:fractal",
+                                "noise": "odyssea:seed",
+                                "salt": "mars/lowlands",
+                                "mode": "fbm",
+                                "scale": 1400.0,
+                                "octaves": 5
+                              }
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "argument2": {
+                    "type": "minecraft:mul",
+                    "argument1": {
+                      "type": "minecraft:add",
+                      "argument1": {
+                        "type": "minecraft:add",
+                        "argument1": {
+                          "type": "odyssea:craters",
+                          "noise": "odyssea:seed",
+                          "salt": "mars/large",
+                          "cell_size": 750.0,
+                          "chance": 0.6,
+                          "min_radius": 55.0,
+                          "max_radius": 240.0,
+                          "size_power": 1.7,
+                          "depth_ratio": 0.34,
+                          "complex_radius": 60.0,
+                          "rim_ratio": 0.32,
+                          "irregularity": 0.12,
+                          "degradation": 0.6
+                        },
+                        "argument2": {
+                          "type": "odyssea:craters",
+                          "noise": "odyssea:seed",
+                          "salt": "mars/medium",
+                          "cell_size": 140.0,
+                          "chance": 0.6,
+                          "min_radius": 8.0,
+                          "max_radius": 50.0,
+                          "size_power": 2.0,
+                          "depth_ratio": 0.42,
+                          "complex_radius": 60.0,
+                          "rim_ratio": 0.26,
+                          "irregularity": 0.08,
+                          "degradation": 0.6
+                        }
+                      },
+                      "argument2": {
+                        "type": "odyssea:craters",
+                        "noise": "odyssea:seed",
+                        "salt": "mars/small",
+                        "cell_size": 32.0,
+                        "chance": 0.45,
+                        "min_radius": 2.0,
+                        "max_radius": 9.0,
+                        "size_power": 2.2,
+                        "depth_ratio": 0.4,
+                        "complex_radius": 120.0,
+                        "rim_ratio": 0.2,
+                        "irregularity": 0.08,
+                        "degradation": 0.6
+                      }
+                    },
+                    "argument2": {
+                      "type": "minecraft:add",
+                      "argument1": 0.3,
+                      "argument2": {
+                        "type": "minecraft:mul",
+                        "argument1": 0.7,
+                        "argument2": "odyssea:mars/dichotomy"
+                      }
+                    }
+                  }
+                },
+                "argument2": "odyssea:mars/volcanic"
+              },
+              "argument2": {
+                "type": "minecraft:mul",
+                "argument1": -1.0,
+                "argument2": "odyssea:mars/canyon_depth"
+              }
+            },
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": -1.0,
+              "argument2": {
+                "type": "minecraft:mul",
+                "argument1": {
+                  "type": "minecraft:mul",
+                  "argument1": {
+                    "type": "minecraft:spline",
+                    "spline": {
+                      "coordinate": {
+                        "type": "odyssea:fractal",
+                        "noise": "odyssea:seed",
+                        "salt": "mars/channels",
+                        "mode": "fbm",
+                        "scale": 1800.0,
+                        "octaves": 3,
+                        "warp": 380.0,
+                        "warp_scale": 1500.0
+                      },
+                      "points": [
+                        {
+                          "location": -0.023,
+                          "value": 0.0,
+                          "derivative": 0.0
+                        },
+                        {
+                          "location": -0.007,
+                          "value": 1.0,
+                          "derivative": 0.0
+                        },
+                        {
+                          "location": 0.007,
+                          "value": 1.0,
+                          "derivative": 0.0
+                        },
+                        {
+                          "location": 0.023,
+                          "value": 0.0,
+                          "derivative": 0.0
+                        }
+                      ]
+                    }
+                  },
+                  "argument2": {
+                    "type": "minecraft:spline",
+                    "spline": {
+                      "coordinate": {
+                        "type": "odyssea:fractal",
+                        "noise": "odyssea:seed",
+                        "salt": "mars/channel_region",
+                        "mode": "fbm",
+                        "scale": 4500.0,
+                        "octaves": 2
+                      },
+                      "points": [
+                        {
+                          "location": 0.2,
+                          "value": 0.0,
+                          "derivative": 0.0
+                        },
+                        {
+                          "location": 0.4,
+                          "value": 1.0,
+                          "derivative": 0.0
+                        }
+                      ]
+                    }
+                  }
+                },
+                "argument2": {
+                  "type": "minecraft:mul",
+                  "argument1": 18.0,
+                  "argument2": {
+                    "type": "minecraft:add",
+                    "argument1": 1.0,
+                    "argument2": {
+                      "type": "minecraft:mul",
+                      "argument1": -1.0,
+                      "argument2": {
+                        "type": "minecraft:mul",
+                        "argument1": 0.5,
+                        "argument2": "odyssea:mars/dichotomy"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": "odyssea:mars/dune_mask",
+            "argument2": {
+              "type": "minecraft:mul",
+              "argument1": 6.0,
+              "argument2": {
+                "type": "odyssea:fractal",
+                "noise": "odyssea:seed",
+                "salt": "mars/dunes",
+                "mode": "billow",
+                "scale": 60.0,
+                "octaves": 3,
+                "stretch": 3.5,
+                "angle": 35.0
+              }
+            }
+          }
+        },
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": "odyssea:mars/ice_mask",
+          "argument2": {
+            "type": "minecraft:add",
+            "argument1": 22.0,
+            "argument2": {
+              "type": "odyssea:terrace",
+              "input": {
+                "type": "minecraft:mul",
+                "argument1": 18.0,
+                "argument2": {
+                  "type": "odyssea:fractal",
+                  "noise": "odyssea:seed",
+                  "salt": "mars/polar_layers",
+                  "mode": "fbm",
+                  "scale": 900.0,
+                  "octaves": 4,
+                  "warp": 200.0,
+                  "warp_scale": 800.0
+                }
+              },
+              "step": 4.0,
+              "riser": 0.3,
+              "offset": 0.0
+            }
+          }
+        }
+      },
+      "min": -24.0,
+      "max": 388.0
+    }
+  }
+}

@@ -8,6 +8,7 @@ import foundry.veil.api.client.render.shader.uniform.ShaderUniform;
 import foundry.veil.api.event.VeilRenderLevelStageEvent;
 import foundry.veil.platform.VeilEventPlatform;
 import java.lang.reflect.Method;
+import java.nio.FloatBuffer;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -23,7 +24,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.phys.Vec3;
 import odyssea.OdysseaCore;
 import odyssea.dimension.PlanetaryAtmosphere;
-import odyssea.dimension.PlanetaryAtmospheres;
+import odyssea.dimension.Planets;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fc;
@@ -31,6 +32,8 @@ import org.joml.Vector3d;
 import org.joml.Vector3dc;
 import org.joml.Vector3f;
 import org.joml.Vector3fc;
+import org.lwjgl.opengl.GL11;
+import org.lwjgl.system.MemoryStack;
 
 /**
  * Passe céleste exécutée à l'étape {@code AFTER_SKY} de Veil : un triangle plein écran par astre, du plus
@@ -39,16 +42,31 @@ import org.joml.Vector3fc;
  *
  * <p>Toutes les positions envoyées au GPU sont relatives à la caméra et exprimées en kilomètres, ce qui borne
  * l'erreur flottante même pour un astre à plusieurs millions de kilomètres.
+ *
+ * <p>Dans une dimension gérée ici, le ciel vanilla (dôme, lueur du lever, soleil, lune) est retiré par
+ * {@code LevelRendererSkyMixin} ; seules les étoiles vanilla restent, sur un fond noir. Le contenu de chaque ciel
+ * (astres, durée du jour, exposition) est décrit par {@link SolarSystemSky}.
  */
 public final class AtmosphereRenderPass {
     public static final ResourceLocation PROGRAM = OdysseaCore.id("planetary_atmosphere");
 
-    private static final float EXPOSURE = 0.9f;
-    private static final float SUN_ANGULAR_RADIUS = 0.00465f;
-    private static final Vector3fc SUNLIGHT = new Vector3f(1.0f, 0.96f, 0.90f);
+    static final float SUN_ANGULAR_RADIUS = 0.00465f;
+    /**
+     * Agrandissement visuel du disque stellaire. Le vrai soleil (0,27°) ne ferait que 3 pixels à l'écran ;
+     * comme le soleil vanilla, on l'exagère. Le rayon physique reste utilisé pour la pénombre des ombres.
+     */
+    private static final float STAR_DISC_VISUAL_SCALE = 8.6f;
+    /** Diamètre visuel minimal du disque, en pixels : depuis Neptune le Soleil reste un point vif. */
+    private static final float STAR_DISC_MIN_PIXELS = 1.6f;
+    /** Intensité du halo de diffusion autour de la lune, relative à l'éclairement stellaire. */
+    private static final float MOON_HALO_STRENGTH = 6.0e-4f;
+    static final Vector3fc SUNLIGHT = new Vector3f(1.0f, 0.96f, 0.90f);
     private static final AtmosphereRenderPass INSTANCE = new AtmosphereRenderPass();
     private static final AtomicBoolean REGISTERED = new AtomicBoolean();
     private static final Map<ResourceKey<Level>, SkyLayout> LAYOUTS = new ConcurrentHashMap<>();
+
+    /** Vrai tant que le shader est chargé : sinon le ciel vanilla est conservé plutôt qu'un écran noir. */
+    private static volatile boolean shaderReady;
 
     public record SurfacePalette(Vector3fc ocean, Vector3fc lowland, Vector3fc highland, float seaLevel,
                                  float oceanSpecular, int style, float seed) {
@@ -66,36 +84,149 @@ public final class AtmosphereRenderPass {
             systemPositionKm = new Vector3d(systemPositionKm);
             axis = new Vector3f(axis).normalize();
         }
+
+        public CelestialBody at(Vector3dc position) {
+            return new CelestialBody(name, position, radiusKm, reliefKm, atmosphere, axis, rotationPeriodSeconds, palette, rings);
+        }
     }
 
     /**
-     * @param homeBody               planète sous les pieds de l'observateur (atmosphère intérieure, sol laissé au terrain)
-     * @param observerOriginKm       position système du bloc (0, seaLevelY, 0)
-     * @param verticalKmPerBlock     échelle d'altitude visuelle : à 0,08 km/bloc, Y = 1200 correspond à ~90 km, au bord de l'espace
-     * @param horizontalKmPerBlock   parallaxe horizontale (0 au sol : voûte céleste fixe)
+     * Astre qui suit la course du ciel, comme la lune vanilla : sa direction est recalculée à chaque frame
+     * et sa position système est ignorée.
+     *
+     * @param distanceKm         distance visuelle, choisie pour la taille apparente voulue
+     * @param cycleDays          période synodique en jours locaux (négative pour une orbite rétrograde : l'astre
+     *                           traverse alors le ciel plus vite que le Soleil)
+     * @param inclinationRadians inclinaison de sa course sur celle de l'étoile : évite une éclipse à chaque nouvelle lune
      */
-    public record SkyLayout(@Nullable CelestialBody homeBody, Vector3dc observerOriginKm, double verticalKmPerBlock,
-                            double horizontalKmPerBlock, double seaLevelY, List<CelestialBody> visibleBodies,
-                            Vector3fc starColor, float starIlluminance, float starAngularRadius,
-                            float starPathTiltRadians, boolean drawStarDisc) {
+    public record SkyTrack(CelestialBody body, double distanceKm, double cycleDays, float inclinationRadians) {
+        private static final double FULL_MOON_LOCAL_DAY = 0.75; // minuit du jour 0 : pleine lune, comme la phase vanilla 0
 
-        public static SkyLayout onSurface(CelestialBody home, double verticalKmPerBlock, double seaLevelY,
-                                          List<CelestialBody> visibleBodies, float starIlluminance,
-                                          float starAngularRadius, boolean drawStarDisc) {
-            Vector3d origin = new Vector3d(home.systemPositionKm()).add(0.0, home.radiusKm(), 0.0);
-            return new SkyLayout(home, origin, verticalKmPerBlock, 0.0, seaLevelY, List.copyOf(visibleBodies),
-                    SUNLIGHT, starIlluminance, starAngularRadius, 0.35f, drawStarDisc);
+        Vector3f direction(float timeOfDay, double localDays, float pathTiltRadians) {
+            double cycles = (localDays - FULL_MOON_LOCAL_DAY) / cycleDays;
+            double phase = cycles - Math.floor(cycles);
+            // Opposée à l'étoile à la pleine lune, puis en retard d'une fraction de tour chaque jour :
+            // elle se lève plus tard chaque soir et ses phases suivent l'angle qu'elle fait avec l'étoile.
+            return trackDirection(timeOfDay + 0.5f - (float) phase, pathTiltRadians + inclinationRadians, 0.0f);
+        }
+    }
+
+    /**
+     * @param homeBody             planète sous les pieds de l'observateur (atmosphère intérieure, sol au-delà du terrain)
+     * @param planet               durée du jour et sens de rotation ({@code null} : horloge vanilla)
+     * @param observerOriginKm     position système du bloc (0, seaLevelY, 0)
+     * @param verticalKmPerBlock   échelle d'altitude visuelle : à 0,08 km/bloc, Y = 1200 correspond à ~90 km, au bord de l'espace
+     * @param horizontalKmPerBlock parallaxe horizontale (0 au sol : voûte céleste fixe)
+     * @param trackedBodies        astres qui suivent la course du ciel (lunes)
+     * @param starPathTiltRadians  inclinaison de la course diurne (latitude de l'observateur)
+     * @param starDeclinationRadians déclinaison du Soleil (saison) : décale sa course vers un pôle
+     * @param exposure             adaptation de l'œil : compense en partie la chute d'éclairement loin du Soleil
+     * @param dayStarBrightness    luminosité minimale des étoiles en plein jour (ciel noir des corps sans atmosphère)
+     */
+    public record SkyLayout(@Nullable CelestialBody homeBody, @Nullable Planets.Planet planet, Vector3dc observerOriginKm,
+                            double verticalKmPerBlock, double horizontalKmPerBlock, double seaLevelY,
+                            List<CelestialBody> visibleBodies, List<SkyTrack> trackedBodies, Vector3fc starColor,
+                            float starIlluminance, float starAngularRadius, float starPathTiltRadians,
+                            float starDeclinationRadians, float exposure, float dayStarBrightness, boolean heliocentric) {
+
+        public static Builder onSurface(CelestialBody home, Planets.Planet planet, double seaLevelY) {
+            return new Builder(home, planet, new Vector3d(home.systemPositionKm()).add(0.0, home.radiusKm(), 0.0), seaLevelY);
         }
 
-        public static SkyLayout inSpace(Vector3dc observerOriginKm, double verticalKmPerBlock, double horizontalKmPerBlock,
-                                        double seaLevelY, List<CelestialBody> visibleBodies, float starIlluminance) {
-            return new SkyLayout(null, new Vector3d(observerOriginKm), verticalKmPerBlock, horizontalKmPerBlock, seaLevelY,
-                    List.copyOf(visibleBodies), SUNLIGHT, starIlluminance, SUN_ANGULAR_RADIUS, 0.35f, true);
+        /**
+         * Ciel de la dimension spatiale : un bloc = un kilomètre, l'étoile au point {@code starPositionKm}. Sa direction,
+         * son diamètre apparent et son éclairement dépendent de la position de la caméra (et du saut quantique en cours).
+         */
+        public static SkyLayout heliocentric(List<CelestialBody> visibleBodies, Vector3dc starPositionKm) {
+            return new SkyLayout(null, null, new Vector3d(starPositionKm), 1.0, 1.0, 0.0,
+                    List.copyOf(visibleBodies), List.of(), SUNLIGHT, 22.0f, SUN_ANGULAR_RADIUS, 0.0f, 0.0f, 0.9f, 1.0f, true);
+        }
+
+        /** Direction de l'étoile selon l'heure locale, la latitude, la saison et le sens de rotation. */
+        Vector3f sunDirection(float timeOfDay) {
+            Vector3f direction = trackDirection(timeOfDay, starPathTiltRadians, starDeclinationRadians);
+            return retrograde() ? direction.mul(-1.0f, 1.0f, 1.0f) : direction;
+        }
+
+        boolean retrograde() {
+            return planet != null && planet.retrograde();
+        }
+
+        double localDays(double dayTime) {
+            return planet != null ? planet.localDays(dayTime) : dayTime / 24_000.0;
+        }
+    }
+
+    public static final class Builder {
+        private final CelestialBody home;
+        private final Planets.Planet planet;
+        private final Vector3d origin;
+        private final double seaLevelY;
+        private final List<CelestialBody> visible = new ArrayList<>();
+        private final List<SkyTrack> tracks = new ArrayList<>();
+        private float illuminance = 22.0f;
+        private float angularRadius = SUN_ANGULAR_RADIUS;
+        private float tilt = 0.35f;
+        private float declination = 0.0f;
+        private float exposure = 0.9f;
+        private float dayStars = 0.0f;
+
+        private Builder(CelestialBody home, Planets.Planet planet, Vector3d origin, double seaLevelY) {
+            this.home = home;
+            this.planet = planet;
+            this.origin = origin;
+            this.seaLevelY = seaLevelY;
+        }
+
+        public Vector3dc origin() {
+            return origin;
+        }
+
+        public Builder sun(float illuminance, float angularRadius) {
+            this.illuminance = illuminance;
+            this.angularRadius = angularRadius;
+            return this;
+        }
+
+        public Builder path(float tiltRadians, float declinationRadians) {
+            this.tilt = tiltRadians;
+            this.declination = declinationRadians;
+            return this;
+        }
+
+        public Builder exposure(float exposure) {
+            this.exposure = exposure;
+            return this;
+        }
+
+        public Builder dayStars(float brightness) {
+            this.dayStars = brightness;
+            return this;
+        }
+
+        public Builder visible(CelestialBody body) {
+            visible.add(body);
+            return this;
+        }
+
+        public Builder track(SkyTrack track) {
+            tracks.add(track);
+            return this;
+        }
+
+        public SkyLayout build() {
+            return new SkyLayout(home, planet, origin, SolarSystemSky.VERTICAL_KM_PER_BLOCK, 0.0, seaLevelY, List.copyOf(visible),
+                    List.copyOf(tracks), SUNLIGHT, illuminance, angularRadius, tilt, declination, exposure, dayStars, false);
         }
     }
 
     private record BodyPass(CelestialBody body, Vector3fc centerKm, double distanceKm, boolean home) {
     }
+
+    /** Corps de rayon nul : le shader n'y dessine que le disque et le halo de l'étoile. */
+    private static final CelestialBody STAR_ONLY = new CelestialBody("star_only", new Vector3d(), 0.0f, 0.0f,
+            PlanetaryAtmosphere.VACUUM, new Vector3f(0.0f, 1.0f, 0.0f), 0.0f,
+            new SurfacePalette(new Vector3f(), new Vector3f(), new Vector3f(), 0.0f, 0.0f, SurfacePalette.ROCKY, 0.0f), null);
 
     private final Matrix4f inverseViewProjection = new Matrix4f();
     private final Vector3d cameraSystemKm = new Vector3d();
@@ -108,7 +239,7 @@ public final class AtmosphereRenderPass {
         if (!REGISTERED.compareAndSet(false, true)) {
             return;
         }
-        DefaultSystem.registerLayouts();
+        SolarSystemSky.registerLayouts();
         VeilEventPlatform.INSTANCE.onVeilRenderLevelStage((stage, levelRenderer, bufferSource, matrixStack, frustumMatrix,
                                                            projectionMatrix, renderTick, deltaTracker, camera, frustum) -> {
             if (stage == VeilRenderLevelStageEvent.Stage.AFTER_SKY) {
@@ -119,6 +250,52 @@ public final class AtmosphereRenderPass {
 
     public static void registerLayout(ResourceKey<Level> dimension, SkyLayout layout) {
         LAYOUTS.put(dimension, layout);
+    }
+
+    public static @Nullable SkyLayout layout(ResourceKey<Level> dimension) {
+        return LAYOUTS.get(dimension);
+    }
+
+    /**
+     * Appelé par le mixin du ciel vanilla. Avec un shaderpack Iris, le pack garde la main sur le ciel.
+     */
+    public static boolean replacesVanillaSky() {
+        ClientLevel level = Minecraft.getInstance().level;
+        return shaderReady && level != null && LAYOUTS.containsKey(level.dimension()) && !IrisCompat.isShaderPackInUse();
+    }
+
+    /** Luminosité minimale des étoiles vanilla dans la dimension courante (0 si le ciel vanilla est conservé). */
+    public static float dayStarBrightness() {
+        ClientLevel level = Minecraft.getInstance().level;
+        if (level == null || !replacesVanillaSky()) {
+            return 0.0f;
+        }
+        SkyLayout layout = LAYOUTS.get(level.dimension());
+        return layout != null ? layout.dayStarBrightness() : 0.0f;
+    }
+
+    /**
+     * Hauteur du Soleil local (sinus de l'élévation) pour la dimension courante, calculée comme dans le shader.
+     * Sert à teinter le brouillard selon l'heure.
+     */
+    public static float sunElevation(ClientLevel level, float partialTick) {
+        SkyLayout layout = LAYOUTS.get(level.dimension());
+        float timeOfDay = level.getTimeOfDay(partialTick);
+        return layout != null ? layout.sunDirection(timeOfDay).y : trackDirection(timeOfDay, 0.0f, 0.0f).y;
+    }
+
+    /**
+     * Remplace le dôme vanilla par un fond noir. Un effacement est nécessaire : sous le dôme, le framebuffer
+     * contient la couleur du brouillard, qui transparaîtrait au travers de l'atmosphère.
+     */
+    public static void clearSkyBackground() {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            FloatBuffer previous = stack.mallocFloat(4);
+            GL11.glGetFloatv(GL11.GL_COLOR_CLEAR_VALUE, previous);
+            RenderSystem.clearColor(0.0f, 0.0f, 0.0f, 0.0f);
+            RenderSystem.clear(GL11.GL_COLOR_BUFFER_BIT, Minecraft.ON_OSX);
+            RenderSystem.clearColor(previous.get(0), previous.get(1), previous.get(2), previous.get(3));
+        }
     }
 
     /** @param view rotation caméra seule (le « frustum matrix » vanilla, sans translation) */
@@ -132,44 +309,115 @@ public final class AtmosphereRenderPass {
         if (layout == null) {
             return;
         }
+        // Avec un shaderpack Iris actif, le ciel intérieur, le soleil et la lune appartiennent au pack ;
+        // seuls les astres lointains restent dessinés.
+        boolean irisSky = IrisCompat.isShaderPackInUse();
 
         Vec3 cameraPos = camera.getPosition();
-        double altitudeKm = Math.max(0.0, (cameraPos.y - layout.seaLevelY()) * layout.verticalKmPerBlock());
-        cameraSystemKm.set(layout.observerOriginKm()).add(
-                cameraPos.x * layout.horizontalKmPerBlock(), altitudeKm, cameraPos.z * layout.horizontalKmPerBlock());
+        // Plancher de 5 m : au niveau exact de la sphère, l'intersection avec le sol devient instable.
+        double altitudeKm = Math.max(0.005, (cameraPos.y - layout.seaLevelY()) * layout.verticalKmPerBlock());
+        float timeOfDay = level.getTimeOfDay(partialTick);
+        Vector3f sunDirection;
+        float starIlluminance = layout.starIlluminance();
+        float starAngularRadius = layout.starAngularRadius();
+        float exposure = layout.exposure();
+        if (layout.heliocentric()) {
+            // Espace : la caméra est à sa position réelle dans le système (plus le trajet du saut quantique en cours).
+            Vec3 offset = odyssea.client.ship.ShipControls.quantumOffset(partialTick);
+            cameraSystemKm.set(cameraPos.x + offset.x, cameraPos.y + offset.y, cameraPos.z + offset.z);
+            Vector3d toStar = new Vector3d(layout.observerOriginKm()).sub(cameraSystemKm);
+            double distance = Math.max(toStar.length(), 1.0);
+            double flux = Math.min(400.0, Math.pow(odyssea.space.SpaceSystem.AU / distance, 2.0));
+            sunDirection = new Vector3f((float) (toStar.x / distance), (float) (toStar.y / distance), (float) (toStar.z / distance));
+            starIlluminance = (float) (22.0 * flux);
+            starAngularRadius = (float) Math.min(0.6, SUN_ANGULAR_RADIUS * odyssea.space.SpaceSystem.AU / distance);
+            exposure = (float) Math.clamp(0.9 * Math.pow(1.0 / flux, 0.65), 0.05, 60.0);
+        } else {
+            cameraSystemKm.set(layout.observerOriginKm()).add(
+                    cameraPos.x * layout.horizontalKmPerBlock(), altitudeKm, cameraPos.z * layout.horizontalKmPerBlock());
+            sunDirection = layout.sunDirection(timeOfDay);
+        }
 
         passes.clear();
+        float pixelAngleEstimate = 2.0f / (projection.m11() * Math.max(1, minecraft.getWindow().getHeight()));
         for (CelestialBody body : layout.visibleBodies()) {
             Vector3d relative = new Vector3d(body.systemPositionKm()).sub(cameraSystemKm);
-            passes.add(new BodyPass(body, new Vector3f((float) relative.x, (float) relative.y, (float) relative.z), relative.length(), false));
+            double distance = relative.length();
+            // Astre plus petit qu'un tiers de pixel (atmosphère et anneaux compris) : invisible, passe économisée.
+            double extent = body.radiusKm() + body.atmosphere().scattering().thicknessKm()
+                    + (body.rings() != null ? body.rings().outerRadiusKm() : 0.0);
+            if (layout.heliocentric() && extent / distance < pixelAngleEstimate * 0.3) {
+                continue;
+            }
+            passes.add(new BodyPass(body, new Vector3f((float) relative.x, (float) relative.y, (float) relative.z), distance, false));
+        }
+        Vector3f moonDirection = null;
+        if (!irisSky) {
+            double localDays = layout.localDays(level.getDayTime() + partialTick);
+            for (SkyTrack track : layout.trackedBodies()) {
+                Vector3f direction = track.direction(timeOfDay, localDays, layout.starPathTiltRadians());
+                if (layout.retrograde()) {
+                    direction.mul(-1.0f, 1.0f, 1.0f);
+                }
+                passes.add(new BodyPass(track.body(), new Vector3f(direction).mul((float) track.distanceKm()), track.distanceKm(), false));
+                if (moonDirection == null) {
+                    moonDirection = direction;
+                }
+            }
         }
         passes.sort(Comparator.comparingDouble(BodyPass::distanceKm).reversed());
+
         CelestialBody home = layout.homeBody();
-        // Avec un shaderpack Iris actif, le ciel intérieur appartient au pack ; les astres lointains restent dessinés.
-        if (home != null && home.atmosphere().scattering().hasAtmosphere() && !IrisCompat.isShaderPackInUse()) {
+        boolean homeDrawn = home != null && home.atmosphere().scattering().hasAtmosphere() && !irisSky;
+        if (homeDrawn) {
+            // En dernier : l'atmosphère atténue les astres dessinés avant elle (la face sombre de la lune
+            // disparaît de jour) et ajoute sa propre diffusion par-dessus.
             float depth = (float) (home.radiusKm() + altitudeKm);
             passes.add(new BodyPass(home, new Vector3f(0.0f, -depth, 0.0f), depth, true));
         }
         if (passes.isEmpty()) {
-            return;
+            if (irisSky) {
+                return;
+            }
+            // Ciel sans atmosphère ni astre visible (Mercure) : une passe réduite au disque stellaire.
+            passes.add(new BodyPass(STAR_ONLY, new Vector3f(), 0.0, false));
         }
 
         ShaderProgram shader = VeilRenderSystem.setShader(PROGRAM);
         if (shader == null) {
+            shaderReady = false;
             return;
         }
+        shaderReady = true;
         shader.bind();
 
         inverseViewProjection.set(projection).mul(view).invert();
         double timeSeconds = (level.getGameTime() + partialTick) / 20.0;
-        setMatrix(shader, "uInvViewProj", inverseViewProjection);
         // Angle sous-tendu par un pixel : 2·tan(fov/2)/hauteur, avec P[1][1] = 1/tan(fov/2).
-        setFloat(shader, "uPixelAngle", 2.0f / (projection.m11() * Math.max(1, minecraft.getWindow().getHeight())));
-        setFloat(shader, "uExposure", EXPOSURE);
-        setVec3(shader, "uSunDirection", starDirection(level.getTimeOfDay(partialTick), layout.starPathTiltRadians()));
+        float pixelAngle = 2.0f / (projection.m11() * Math.max(1, minecraft.getWindow().getHeight()));
+        setMatrix(shader, "uInvViewProj", inverseViewProjection);
+        setFloat(shader, "uPixelAngle", pixelAngle);
+        setFloat(shader, "uExposure", exposure);
+        setVec3(shader, "uSunDirection", sunDirection);
         setVec3(shader, "uSunColor", layout.starColor());
-        setFloat(shader, "uSunIlluminance", layout.starIlluminance());
-        setFloat(shader, "uStarAngularRadius", layout.starAngularRadius());
+        setFloat(shader, "uSunIlluminance", starIlluminance);
+        setFloat(shader, "uStarAngularRadius", starAngularRadius);
+        setFloat(shader, "uStarDiscRadius", Math.max(starAngularRadius * STAR_DISC_VISUAL_SCALE, pixelAngle * STAR_DISC_MIN_PIXELS));
+        org.joml.Vector4f[] horizon = layout.homeBody() != null ? odyssea.client.HorizonClient.uniforms(level, cameraPos.y) : null;
+
+        float moonGlow = 0.0f;
+        if (moonDirection != null) {
+            // Fraction éclairée vue d'ici : 1 à l'opposition (pleine lune), 0 en conjonction.
+            float illuminated = 0.5f * (1.0f - moonDirection.dot(sunDirection));
+            float aboveHorizon = Math.clamp((moonDirection.y + 0.05f) / 0.1f, 0.0f, 1.0f);
+            moonGlow = MOON_HALO_STRENGTH * illuminated * aboveHorizon;
+            setVec3(shader, "uMoonDirection", moonDirection);
+        }
+        setFloat(shader, "uMoonGlow", moonGlow);
+
+        // Le disque stellaire est dessiné dans l'atmosphère d'accueil s'il y en a une (il rougit au couchant),
+        // sinon dans la passe la plus lointaine, que les astres plus proches occultent.
+        int starDiscPass = irisSky ? -1 : (homeDrawn ? passes.size() - 1 : 0);
 
         RenderSystem.enableBlend();
         RenderSystem.blendFuncSeparate(
@@ -179,8 +427,9 @@ public final class AtmosphereRenderPass {
         RenderSystem.depthMask(false);
         try {
             for (int i = 0; i < passes.size(); i++) {
-                // Le disque stellaire est dessiné dans la passe la plus lointaine : les astres plus proches l'occultent.
-                applyBody(shader, passes.get(i), timeSeconds, layout.drawStarDisc() && i == 0);
+                BodyPass pass = passes.get(i);
+                applyBody(shader, pass, timeSeconds, i == starDiscPass);
+                setHorizon(shader, pass.home() ? horizon : null);
                 VeilRenderSystem.drawScreenQuad();
             }
         } finally {
@@ -196,7 +445,8 @@ public final class AtmosphereRenderPass {
         CelestialBody body = pass.body();
         PlanetaryAtmosphere.Scattering scattering = body.atmosphere().scattering();
         SurfacePalette palette = body.palette();
-        float rotation = body.rotationPeriodSeconds() > 0.0f
+        // L'observateur tourne avec sa planète : sa surface et ses nuages sont fixes dans son repère.
+        float rotation = !pass.home() && body.rotationPeriodSeconds() > 0.0f
                 ? (float) ((timeSeconds / body.rotationPeriodSeconds()) % 1.0 * (Math.PI * 2.0))
                 : 0.0f;
 
@@ -221,7 +471,7 @@ public final class AtmosphereRenderPass {
         setVec3(shader, "uMieScattering", scattering.mieScatteringPerKm());
         setVec3(shader, "uMieExtinction", scattering.mieExtinctionPerKm());
         setFloat(shader, "uMieScaleHeight", scattering.mieScaleHeightKm());
-        setFloat(shader, "uMieAnisotropy", scattering.mieAnisotropy());
+        setVec3(shader, "uMieAnisotropy", scattering.mieAnisotropy());
         setVec3(shader, "uAbsorption", scattering.absorptionPerKm());
 
         RingSystem rings = body.rings();
@@ -236,14 +486,35 @@ public final class AtmosphereRenderPass {
     }
 
     /**
-     * Direction de l'étoile cohérente avec le soleil vanilla : rotation X de timeOfDay·360° puis Y de −90°,
-     * appliquée au zénith, ce qui donne (−sin θ, cos θ, 0). Le plan de course est ensuite incliné autour de X.
+     * Direction sur la course céleste, cohérente avec le soleil vanilla : à déclinaison nulle, rotation X de
+     * fraction·360° puis Y de −90° appliquée au zénith, soit (−sin θ, cos θ, 0). La déclinaison décale la course
+     * vers +Z (petit cercle), puis le plan est incliné autour de X de la latitude de l'observateur.
      */
-    private static Vector3f starDirection(float timeOfDay, float tiltRadians) {
-        double theta = timeOfDay * Math.PI * 2.0;
-        double x = -Math.sin(theta);
-        double y = Math.cos(theta);
-        return new Vector3f((float) x, (float) (y * Math.cos(tiltRadians)), (float) (y * Math.sin(tiltRadians))).normalize();
+    static Vector3f trackDirection(float turnFraction, float tiltRadians, float declinationRadians) {
+        double theta = turnFraction * Math.PI * 2.0;
+        double cosDec = Math.cos(declinationRadians);
+        double x = -Math.sin(theta) * cosDec;
+        double y = Math.cos(theta) * cosDec;
+        double z = Math.sin(declinationRadians);
+        double cosTilt = Math.cos(tiltRadians);
+        double sinTilt = Math.sin(tiltRadians);
+        return new Vector3f((float) x, (float) (y * cosTilt - z * sinTilt), (float) (y * sinTilt + z * cosTilt)).normalize();
+    }
+
+    /** Horizon lointain (Terra) : silhouette du relief et couleur du sol par azimut, sinon désactivé. */
+    private static void setHorizon(ShaderProgram shader, org.joml.Vector4f @Nullable [] horizon) {
+        setInt(shader, "uHorizonActive", horizon != null ? 1 : 0);
+        if (horizon == null) {
+            return;
+        }
+        ShaderUniform uniform = shader.getUniform("uHorizon");
+        if (uniform == null) {
+            uniform = shader.getUniform("uHorizon[0]");
+        }
+        if (uniform != null) {
+            uniform.setVectors(horizon);
+        }
+        setFloat(shader, "uHorizonEyeHeight", odyssea.client.HorizonClient.eyeHeightKm());
     }
 
     private static void setFloat(ShaderProgram shader, String name, float value) {
@@ -275,7 +546,7 @@ public final class AtmosphereRenderPass {
     }
 
     /** Détection d'Iris par réflexion : aucune dépendance de compilation, aucun crash s'il est absent. */
-    private static final class IrisCompat {
+    static final class IrisCompat {
         private static final @Nullable Object API;
         private static final @Nullable Method IS_SHADER_PACK_IN_USE;
 
@@ -303,44 +574,6 @@ public final class AtmosphereRenderPass {
             } catch (ReflectiveOperationException e) {
                 return false;
             }
-        }
-    }
-
-    /** Système stellaire par défaut d'Odyssea. Positions en km dans un repère héliocentrique fictif centré sur Terra. */
-    private static final class DefaultSystem {
-        static final PlanetaryAtmosphere KRONOS_ATMOSPHERE = PlanetaryAtmosphere.fromComposition(
-                Map.of(PlanetaryAtmosphere.Gas.H2, 0.963, PlanetaryAtmosphere.Gas.HE, 0.0325, PlanetaryAtmosphere.Gas.CH4, 0.0045),
-                100_000.0, 134.0, 10.44, 63.0, 1000.0, 58_232.0f, 600.0f,
-                new PlanetaryAtmosphere.Aerosols(new Vector3f(2.0e-3f, 1.8e-3f, 1.2e-3f), new Vector3f(2.4e-3f, 2.3e-3f, 2.2e-3f), 30.0f, 0.7f));
-
-        static final CelestialBody TERRA = new CelestialBody("terra", new Vector3d(0.0, 0.0, 0.0), 6371.0f, 9.0f,
-                PlanetaryAtmospheres.TERRA, new Vector3f(0.0f, 0.917f, 0.398f), 1200.0f,
-                new SurfacePalette(new Vector3f(0.02f, 0.07f, 0.18f), new Vector3f(0.13f, 0.25f, 0.08f),
-                        new Vector3f(0.42f, 0.36f, 0.28f), 0.53f, 1.0f, SurfacePalette.ROCKY, 11.0f), null);
-
-        static final CelestialBody LUNA = new CelestialBody("luna", new Vector3d(180_000.0, 290_000.0, -150_000.0), 1737.4f, 6.0f,
-                PlanetaryAtmosphere.VACUUM, new Vector3f(0.0f, 1.0f, 0.0f), 0.0f,
-                new SurfacePalette(new Vector3f(0.30f, 0.30f, 0.31f), new Vector3f(0.45f, 0.44f, 0.42f),
-                        new Vector3f(0.62f, 0.61f, 0.58f), 0.42f, 0.0f, SurfacePalette.ROCKY, 4.7f), null);
-
-        static final CelestialBody KRONOS = new CelestialBody("kronos", new Vector3d(-1.1e6, 0.55e6, 0.9e6), 58_232.0f, 0.0f,
-                KRONOS_ATMOSPHERE, new Vector3f(0.0f, 0.893f, 0.449f), 3600.0f,
-                new SurfacePalette(new Vector3f(0.70f, 0.62f, 0.46f), new Vector3f(0.80f, 0.70f, 0.52f),
-                        new Vector3f(0.93f, 0.86f, 0.70f), 0.0f, 0.0f, SurfacePalette.BANDED, 7.3f),
-                new RingSystem(74_500.0f, 140_220.0f, new Vector3f(0.83f, 0.76f, 0.62f), 0.85f));
-
-        static final CelestialBody ARES = new CelestialBody("ares", new Vector3d(2.1e6, -0.4e6, 1.6e6), 3389.5f, 12.0f,
-                PlanetaryAtmospheres.ARES_ATMOSPHERE, new Vector3f(0.0f, 0.906f, 0.423f), 1240.0f,
-                new SurfacePalette(new Vector3f(0.30f, 0.14f, 0.08f), new Vector3f(0.55f, 0.28f, 0.14f),
-                        new Vector3f(0.72f, 0.45f, 0.28f), 0.45f, 0.0f, SurfacePalette.ROCKY, 23.0f), null);
-
-        static void registerLayouts() {
-            registerLayout(Level.OVERWORLD, SkyLayout.onSurface(TERRA, 0.08, 63.0, List.of(LUNA, KRONOS), 22.0f, SUN_ANGULAR_RADIUS, false));
-            registerLayout(PlanetaryAtmospheres.ORBIT, SkyLayout.inSpace(
-                    new Vector3d(TERRA.systemPositionKm()).add(0.0, TERRA.radiusKm() + 420.0, 0.0),
-                    0.08, 0.02, 63.0, List.of(TERRA, LUNA, KRONOS), 22.0f));
-            registerLayout(PlanetaryAtmospheres.LUNA, SkyLayout.onSurface(LUNA, 0.08, 63.0, List.of(TERRA, KRONOS), 22.0f, SUN_ANGULAR_RADIUS, true));
-            registerLayout(PlanetaryAtmospheres.ARES, SkyLayout.onSurface(ARES, 0.08, 63.0, List.of(KRONOS), 9.5f, 0.0031f, true));
         }
     }
 }

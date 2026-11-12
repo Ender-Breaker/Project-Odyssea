@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "odyssea:blocks/mercurian_rock",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "odyssea:mercurian_rock"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

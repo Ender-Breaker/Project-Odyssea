@@ -1,0 +1,21 @@
+{
+  "type": "minecraft:block",
+  "random_sequence": "odyssea:blocks/ice_slush",
+  "pools": [
+    {
+      "rolls": 1.0,
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "name": "odyssea:ice_slush"
+        }
+      ],
+      "conditions": [
+        {
+          "condition": "minecraft:survives_explosion"
+        }
+      ]
+    }
+  ]
+}

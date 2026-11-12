@@ -1,0 +1,27 @@
+{
+  "schematic": "odyssea:raider",
+  "forward": "+z",
+  "hostile": true,
+  "camera_distance": 18,
+  "seats": [
+    [4.5, 2.2, 7.5]
+  ],
+  "engines": [
+    [3.5, 1.5, -0.2],
+    [5.5, 1.5, -0.2]
+  ],
+  "guns": [
+    [0.5, 1.5, 6.2],
+    [8.5, 1.5, 6.2]
+  ],
+  "stats": {
+    "hull": 700, "shield": 350, "shield_regen": 40, "shield_delay": 5,
+    "energy": 600, "energy_regen": 120,
+    "fuel": 600, "fuel_burn": 1.5, "quantum_fuel": 0,
+    "max_speed": 230, "boost_speed": 330,
+    "accel_forward": 34, "accel_back": 22, "accel_strafe": 22, "accel_vertical": 26,
+    "turn_rate": 1.6, "roll_rate": 2.0, "angular_accel": 3.5,
+    "gun_damage": 7, "gun_cooldown": 5, "gun_energy": 10, "bolt_speed": 330, "bolt_color": "FFAA20",
+    "missile_damage": 25, "missile_explosion": 2.0, "missiles": 2, "missile_cooldown": 80
+  }
+}

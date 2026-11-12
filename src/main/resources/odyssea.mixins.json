@@ -4,7 +4,16 @@
   "package": "odyssea.mixin",
   "compatibilityLevel": "JAVA_21",
   "mixins": [
-    "ServerLevelMixin"
+    "LevelTimeOfDayMixin",
+    "NoiseBasedChunkGeneratorMixin",
+    "ServerLevelMixin",
+    "TrackedEntityMixin"
+  ],
+  "client": [
+    "client.ClientLevelStarsMixin",
+    "client.LevelRendererSkyMixin",
+    "client.RenderSectionMixin",
+    "client.VertexBufferMixin"
   ],
   "injectors": {
     "defaultRequire": 1

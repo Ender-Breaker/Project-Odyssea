@@ -1,0 +1,14 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "odyssea:fractal",
+      "noise": "odyssea:seed",
+      "salt": "terra/massif",
+      "mode": "fbm",
+      "scale": 2600.0,
+      "octaves": 3
+    }
+  }
+}

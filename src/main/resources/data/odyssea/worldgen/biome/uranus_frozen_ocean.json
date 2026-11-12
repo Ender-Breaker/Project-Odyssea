@@ -1,0 +1,43 @@
+{
+  "has_precipitation": false,
+  "temperature": -1.0,
+  "downfall": 0.0,
+  "effects": {
+    "sky_color": 9884374,
+    "fog_color": 11197148,
+    "water_color": 3443880,
+    "water_fog_color": 402996
+  },
+  "spawners": {
+    "monster": [],
+    "creature": [],
+    "ambient": [],
+    "axolotls": [],
+    "underground_water_creature": [],
+    "water_creature": [],
+    "water_ambient": [],
+    "misc": []
+  },
+  "spawn_costs": {},
+  "carvers": {},
+  "features": [
+    [],
+    [],
+    [
+      "minecraft:iceberg_packed",
+      "minecraft:iceberg_blue"
+    ],
+    [],
+    [
+      "minecraft:blue_ice"
+    ],
+    [],
+    [],
+    [],
+    [],
+    [],
+    [
+      "minecraft:freeze_top_layer"
+    ]
+  ]
+}

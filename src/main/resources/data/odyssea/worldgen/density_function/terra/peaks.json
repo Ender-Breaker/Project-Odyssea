@@ -1,0 +1,17 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "odyssea:fractal",
+      "noise": "odyssea:seed",
+      "salt": "terra/peaks",
+      "mode": "ridged",
+      "scale": 900.0,
+      "octaves": 8,
+      "erosion": 0.03,
+      "warp": 190.0,
+      "warp_scale": 1500.0
+    }
+  }
+}

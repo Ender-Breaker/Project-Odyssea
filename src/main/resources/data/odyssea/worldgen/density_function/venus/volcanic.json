@@ -1,0 +1,60 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": {
+          "type": "odyssea:volcanoes",
+          "noise": "odyssea:seed",
+          "salt": "venus/shields",
+          "cell_size": 7000.0,
+          "chance": 0.42,
+          "min_radius": 700.0,
+          "max_radius": 1400.0,
+          "size_power": 1.5,
+          "height_ratio": 0.15,
+          "shape": "shield",
+          "scarp": 0.0,
+          "caldera_ratio": 0.08,
+          "caldera_depth": 0.12,
+          "irregularity": 0.1
+        },
+        "argument2": {
+          "type": "odyssea:volcanoes",
+          "noise": "odyssea:seed",
+          "salt": "venus/small_shields",
+          "cell_size": 350.0,
+          "chance": 0.22,
+          "min_radius": 25.0,
+          "max_radius": 90.0,
+          "size_power": 1.5,
+          "height_ratio": 0.17,
+          "shape": "shield",
+          "scarp": 0.0,
+          "caldera_ratio": 0.25,
+          "caldera_depth": 0.22,
+          "irregularity": 0.1
+        }
+      },
+      "argument2": {
+        "type": "odyssea:volcanoes",
+        "noise": "odyssea:seed",
+        "salt": "venus/pancake_domes",
+        "cell_size": 1100.0,
+        "chance": 0.35,
+        "min_radius": 45.0,
+        "max_radius": 120.0,
+        "size_power": 1.5,
+        "height_ratio": 0.24,
+        "shape": "dome",
+        "scarp": 0.0,
+        "caldera_ratio": 0.12,
+        "caldera_depth": 0.12,
+        "irregularity": 0.05
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "schematic": "odyssea:destroyer",
+  "forward": "+z",
+  "camera_distance": 170,
+  "seats": [
+    [58.5, 35.0, 128.5],
+    [55.5, 35.0, 128.5],
+    [61.5, 35.0, 128.5],
+    [58.5, 35.0, 132.5],
+    [55.5, 35.0, 132.5],
+    [61.5, 35.0, 132.5]
+  ],
+  "engines": [
+    [9.5, 30.0, 2.0],
+    [41.0, 31.5, 2.0],
+    [51.5, 28.0, 2.0],
+    [51.5, 39.5, 2.0],
+    [66.5, 28.0, 2.0],
+    [66.5, 39.5, 2.0],
+    [77.0, 32.0, 2.0],
+    [108.0, 30.0, 2.0]
+  ],
+  "guns": [
+    [34.5, 38.5, 297.5],
+    [83.5, 38.5, 297.5]
+  ],
+  "missiles": [
+    [58.5, 30.0, 250.0],
+    [58.5, 46.0, 200.0]
+  ],
+  "stats": {
+    "hull": 24000, "shield": 16000, "shield_regen": 250, "shield_delay": 6,
+    "energy": 4000, "energy_regen": 450,
+    "fuel": 12000, "fuel_burn": 10.0, "quantum_fuel": 600,
+    "max_speed": 110, "boost_speed": 180,
+    "accel_forward": 8, "accel_back": 5, "accel_strafe": 4, "accel_vertical": 12,
+    "turn_rate": 0.22, "roll_rate": 0.25, "angular_accel": 0.25,
+    "gun_damage": 30, "gun_cooldown": 6, "gun_energy": 40, "bolt_speed": 420, "bolt_color": "40B0FF",
+    "missile_damage": 80, "missile_explosion": 6.0, "missiles": 24, "missile_cooldown": 40
+  }
+}

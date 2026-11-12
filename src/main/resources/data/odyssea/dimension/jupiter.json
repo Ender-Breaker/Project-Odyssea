@@ -1,0 +1,18 @@
+{
+  "type": "odyssea:jupiter",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "odyssea:jupiter_cloud_deck",
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 1
+        }
+      ],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

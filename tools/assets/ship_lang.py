@@ -1,0 +1,193 @@
+"""Traductions des vaisseaux, de l'espace et de la combinaison (fusionnées dans en_us.json et fr_fr.json).
+
+    python tools/assets/ship_lang.py
+"""
+
+import json
+from pathlib import Path
+
+LANG = Path(__file__).resolve().parents[2] / "src" / "main" / "resources" / "assets" / "odyssea" / "lang"
+
+BODIES = {
+    "sun": ("Sun", "Soleil"), "mercury": ("Mercury", "Mercure"), "venus": ("Venus", "Vénus"), "terra": ("Terra", "Terra"),
+    "luna": ("Luna", "Lune"), "mars": ("Mars", "Mars"), "phobos": ("Phobos", "Phobos"), "deimos": ("Deimos", "Déimos"),
+    "belt": ("Asteroid Belt", "Ceinture d'astéroïdes"), "jupiter": ("Jupiter", "Jupiter"), "io": ("Io", "Io"),
+    "europa": ("Europa", "Europe"), "ganymede": ("Ganymede", "Ganymède"), "callisto": ("Callisto", "Callisto"),
+    "saturn": ("Saturn", "Saturne"), "titan": ("Titan", "Titan"), "rhea": ("Rhea", "Rhéa"), "uranus": ("Uranus", "Uranus"),
+    "miranda": ("Miranda", "Miranda"), "ariel": ("Ariel", "Ariel"), "umbriel": ("Umbriel", "Umbriel"),
+    "titania": ("Titania", "Titania"), "oberon": ("Oberon", "Obéron"), "neptune": ("Neptune", "Neptune"),
+    "triton": ("Triton", "Triton"), "proteus": ("Proteus", "Protée"),
+}
+
+DESCRIPTIONS = {
+    "sun": ("Yellow dwarf. Hull and shields overheat within 6,000 km.", "Naine jaune. La coque et les boucliers surchauffent à moins de 6 000 km."),
+    "mercury": ("Airless, cratered, scorched by day. Lobate scarps and bright hollows.", "Sans air, criblée de cratères, brûlante le jour. Escarpements lobés et creux brillants."),
+    "venus": ("Crushing 92 bar CO₂ atmosphere, lava lakes, giant shield volcanoes.", "Atmosphère de 92 bar de CO₂, lacs de lave, volcans boucliers géants."),
+    "terra": ("Home. Breathable air, oceans and every biome.", "Notre monde. Air respirable, océans et tous les biomes."),
+    "luna": ("Low gravity (0.17 g), regolith, maria and deep craters. No air.", "Faible gravité (0,17 g), régolithe, mers et cratères profonds. Pas d'air."),
+    "mars": ("Thin CO₂ air, red dust, Olympus Mons and Valles Marineris.", "Air ténu de CO₂, poussière rouge, Olympus Mons et Valles Marineris."),
+    "phobos": ("Tiny captured asteroid skimming Mars.", "Petit astéroïde capturé qui rase Mars."),
+    "deimos": ("Mars' smaller, outer moon.", "La plus petite et la plus lointaine lune de Mars."),
+    "belt": ("Dense asteroid field: iron, gold, diamonds… and pirates.", "Champ d'astéroïdes dense : fer, or, diamants… et pirates."),
+    "jupiter": ("Gas giant. No surface: an endless sea of clouds.", "Géante gazeuse. Aucun sol : une mer de nuages sans fin."),
+    "io": ("Volcanic sulphur moon.", "Lune volcanique couverte de soufre."),
+    "europa": ("Ice shell over a hidden ocean.", "Coquille de glace sur un océan caché."),
+    "ganymede": ("Largest moon of the system.", "La plus grande lune du système."),
+    "callisto": ("Ancient, heavily cratered ice and rock.", "Glace et roche anciennes, saturées de cratères."),
+    "saturn": ("Ringed gas giant. Its rings are made of real ice blocks.", "Géante gazeuse à anneaux, faits de vrais blocs de glace."),
+    "titan": ("Orange haze moon with methane lakes.", "Lune voilée d'orange, aux lacs de méthane."),
+    "rhea": ("Icy, airless moon.", "Lune glacée sans atmosphère."),
+    "uranus": ("Ice giant: an ocean of water under pack ice and methane ridges.", "Géante de glaces : un océan d'eau sous la banquise et des crêtes de méthane."),
+    "miranda": ("Patchwork moon with giant cliffs.", "Lune en patchwork aux falaises géantes."),
+    "ariel": ("Brightest Uranian moon.", "La plus brillante des lunes d'Uranus."),
+    "umbriel": ("Dark, ancient surface.", "Surface sombre et ancienne."),
+    "titania": ("Largest moon of Uranus.", "La plus grande lune d'Uranus."),
+    "oberon": ("Outermost large Uranian moon.", "La plus lointaine des grandes lunes d'Uranus."),
+    "neptune": ("Deep blue gas giant, supersonic winds.", "Géante gazeuse d'un bleu profond, vents supersoniques."),
+    "triton": ("Retrograde moon with nitrogen geysers.", "Lune rétrograde aux geysers d'azote."),
+    "proteus": ("Dark, irregular moon.", "Lune sombre et irrégulière."),
+}
+
+STRINGS = {
+    "itemGroup.odyssea.ships": ("Odyssea – Ships", "Odyssea – Vaisseaux"),
+    "item.odyssea.cutlass_beacon": ("Cutlass Deployment Beacon", "Balise de déploiement – Cutlass"),
+    "item.odyssea.destroyer_beacon": ("Destroyer Deployment Beacon", "Balise de déploiement – Destroyer"),
+    "item.odyssea.hydrogen_cell": ("Hydrogen Cell", "Pile à hydrogène"),
+    "item.odyssea.quantum_cell": ("Quantum Fuel Cell", "Cellule de carburant quantique"),
+    "item.odyssea.ship_missile": ("Ship Missile", "Missile de vaisseau"),
+    "item.odyssea.hull_repair_kit": ("Hull Repair Kit", "Kit de réparation de coque"),
+    "item.odyssea.space_helmet": ("Space Helmet", "Casque spatial"),
+    "item.odyssea.space_suit": ("Space Suit", "Combinaison spatiale"),
+    "item.odyssea.space_leggings": ("Space Suit Leggings", "Jambières de combinaison"),
+    "item.odyssea.space_boots": ("Space Boots", "Bottes spatiales"),
+    "item.odyssea.ship_beacon.tooltip": ("Use on a block to deploy the ship. Sneak with an empty hand on a landed ship to pack it up.",
+                                        "Utiliser sur un bloc pour déployer le vaisseau. Accroupi, main vide, sur un vaisseau posé : le remballer."),
+    "item.odyssea.ship_beacon.state": ("Hull %s · Hydrogen %s L", "Coque %s · Hydrogène %s L"),
+    "item.odyssea.space_suit.oxygen": ("Oxygen: %s:%s", "Oxygène : %s:%s"),
+    "item.odyssea.space_suit.tooltip": ("Full suit: breathe in vacuum and maneuver freely in space.",
+                                       "Combinaison complète : respirer dans le vide et manœuvrer librement dans l'espace."),
+    "entity.odyssea.ship": ("Ship", "Vaisseau"),
+    "entity.odyssea.ship_projectile": ("Ship Weapon Fire", "Tir de vaisseau"),
+    "ship.odyssea.cutlass": ("Cutlass", "Cutlass"),
+    "ship.odyssea.destroyer": ("Destroyer", "Destroyer"),
+    "ship.odyssea.raider": ("Pirate Raider", "Chasseur pirate"),
+    "death.attack.odyssea.laser": ("%1$s was vaporized by a laser bolt", "%1$s a été vaporisé par un tir laser"),
+    "death.attack.odyssea.laser.player": ("%1$s was shot down by %2$s", "%1$s a été abattu par %2$s"),
+    "gamerule.odysseaPirates": ("Pirate encounters in space", "Rencontres de pirates dans l'espace"),
+    "key.categories.odyssea": ("Odyssea – Ships", "Odyssea – Vaisseaux"),
+    "key.odyssea.roll_left": ("Roll left", "Roulis à gauche"),
+    "key.odyssea.roll_right": ("Roll right", "Roulis à droite"),
+    "key.odyssea.flight_assist": ("Toggle flight assist", "Assistance de vol"),
+    "key.odyssea.power": ("Cycle power distribution", "Répartition d'énergie"),
+    "key.odyssea.target": ("Lock target", "Verrouiller une cible"),
+    "key.odyssea.quantum": ("Quantum drive", "Saut quantique"),
+    "key.odyssea.free_look": ("Free look (hold)", "Regard libre (maintenir)"),
+    "key.odyssea.exit": ("Leave seat", "Quitter le siège"),
+    "key.odyssea.map": ("Solar system map", "Carte du système solaire"),
+    "key.odyssea.cargo": ("Cargo hold", "Soute"),
+    "odyssea.ship.cargo": ("%s – cargo hold", "%s – soute"),
+    "odyssea.ship.cargo_not_empty": ("Empty the cargo hold before packing the ship", "Videz la soute avant de remballer le vaisseau"),
+    "odyssea.ship.power": ("Power: %s", "Énergie : %s"),
+    "odyssea.ship.power.balanced": ("balanced", "équilibrée"),
+    "odyssea.ship.power.shields": ("shields", "boucliers"),
+    "odyssea.ship.power.weapons": ("weapons", "armes"),
+    "odyssea.ship.power.engines": ("engines", "moteurs"),
+    "odyssea.ship.assist.on": ("Flight assist ON: the ship holds its speed and hovers", "Assistance de vol ACTIVE : le vaisseau tient sa vitesse et le stationnaire"),
+    "odyssea.ship.assist.off": ("Flight assist OFF: decoupled, inertial flight", "Assistance de vol COUPÉE : vol découplé, inertiel"),
+    "odyssea.ship.full": ("No free seat", "Aucun siège libre"),
+    "odyssea.ship.boarded.pilot": ("At the controls – mouse: steer · move keys: thrust · left click: guns · right click: missile · M: map",
+                                  "Aux commandes – souris : cap · déplacement : poussée · clic gauche : canons · clic droit : missile · M : carte"),
+    "odyssea.ship.boarded.crew": ("Seated as crew", "Installé comme membre d'équipage"),
+    "odyssea.ship.refuel": ("Hydrogen: %s%%", "Hydrogène : %s %%"),
+    "odyssea.ship.refuel_quantum": ("Quantum fuel: %s%%", "Carburant quantique : %s %%"),
+    "odyssea.ship.repaired": ("Hull: %s%%", "Coque : %s %%"),
+    "odyssea.ship.missiles_loaded": ("Missiles: %s/%s", "Missiles : %s/%s"),
+    "odyssea.ship.already_full": ("Already full", "Déjà plein"),
+    "odyssea.ship.pack_landed": ("Land the ship and stop before packing it up", "Posez le vaisseau et arrêtez-le avant de le remballer"),
+    "odyssea.ship.missing_design": ("Unknown ship design: %s", "Modèle de vaisseau inconnu : %s"),
+    "odyssea.ship.deployed": ("%s deployed – right click the hull to board", "%s déployé – clic droit sur la coque pour embarquer"),
+    "odyssea.ship.no_target": ("No target in sight", "Aucune cible en vue"),
+    "odyssea.ship.target_locked": ("Target locked: %s", "Cible verrouillée : %s"),
+    "odyssea.ship.heat": ("HULL OVERHEATING – move away from the Sun", "SURCHAUFFE DE LA COQUE – éloignez-vous du Soleil"),
+    "odyssea.quantum.cancelled": ("Quantum drive disengaged", "Moteur quantique désengagé"),
+    "odyssea.quantum.need_space": ("Quantum jumps need open space: climb above the atmosphere (Y 1960)", "Le saut quantique exige l'espace : montez au-dessus de l'atmosphère (Y 1960)"),
+    "odyssea.quantum.no_destination": ("No destination: pick one on the map (M)", "Aucune destination : choisissez-en une sur la carte (M)"),
+    "odyssea.quantum.gravity_well": ("Too deep in %s's gravity well: move away", "Trop près du puits de gravité de %s : éloignez-vous"),
+    "odyssea.quantum.too_close": ("Destination too close for a quantum jump", "Destination trop proche pour un saut quantique"),
+    "odyssea.quantum.no_fuel": ("Not enough quantum fuel (%s / %s)", "Carburant quantique insuffisant (%s / %s)"),
+    "odyssea.quantum.align": ("Align the ship with the destination marker", "Alignez le vaisseau sur le repère de destination"),
+    "odyssea.quantum.spooling": ("Quantum drive spooling – destination: %s", "Moteur quantique en charge – destination : %s"),
+    "odyssea.quantum.alignment_lost": ("Alignment lost – jump aborted", "Alignement perdu – saut annulé"),
+    "odyssea.quantum.arrived": ("Arrived near %s", "Arrivée près de %s"),
+    "odyssea.space.entering": ("Entering %s", "Entrée : %s"),
+    "odyssea.space.leaving": ("Leaving the atmosphere – open space", "Sortie de l'atmosphère – espace"),
+    "odyssea.nav.destination_set": ("Destination: %s", "Destination : %s"),
+    "odyssea.encounter.pirates": ("Contacts on the scanner: pirates closing in!", "Contacts au scanner : des pirates approchent !"),
+    "odyssea.suit.oxygen_empty": ("SUIT OXYGEN DEPLETED", "RÉSERVE D'OXYGÈNE VIDE"),
+    "odyssea.suit.oxygen_low": ("Suit oxygen: %s s", "Oxygène de la combinaison : %s s"),
+    "odyssea.hud.hull": ("Hull", "Coque"),
+    "odyssea.hud.shield": ("Shield", "Bouclier"),
+    "odyssea.hud.energy": ("Energy", "Énergie"),
+    "odyssea.hud.fuel": ("H₂", "H₂"),
+    "odyssea.hud.quantum": ("Quantum", "Quantique"),
+    "odyssea.hud.assist_on": ("ASSIST", "ASSISTÉ"),
+    "odyssea.hud.assist_off": ("DECOUPLED", "DÉCOUPLÉ"),
+    "odyssea.hud.boost": ("BOOST", "POSTCOMBUSTION"),
+    "odyssea.hud.no_fuel": ("NO HYDROGEN – NO THRUST", "PLUS D'HYDROGÈNE – AUCUNE POUSSÉE"),
+    "odyssea.hud.missiles": ("Missiles %s/%s", "Missiles %s/%s"),
+    "odyssea.hud.target": ("%s · %s m", "%s · %s m"),
+    "odyssea.hud.no_target": ("No target (R)", "Aucune cible (R)"),
+    "odyssea.hud.nav_leave_atmosphere": ("Route to %s: climb out of the atmosphere", "Route vers %s : sortez de l'atmosphère"),
+    "odyssea.hud.nav_blocked": ("Gravity well of %s: move away to jump", "Puits de gravité de %s : éloignez-vous pour sauter"),
+    "odyssea.hud.nav_info": ("%s · jump %s s · fuel %s/%s", "%s · saut %s s · carburant %s/%s"),
+    "odyssea.hud.nav_align": ("Align with the marker (%s°)", "Alignez-vous sur le repère (%s°)"),
+    "odyssea.hud.nav_ready": ("Aligned – press %s to jump", "Aligné – %s pour sauter"),
+    "odyssea.hud.spool": ("Quantum drive %s%%", "Moteur quantique %s %%"),
+    "odyssea.hud.nav_arrived": ("%s reached", "%s atteint"),
+    "odyssea.hud.nav_arrived_land": ("%s reached – fly into the atmosphere to land", "%s atteint – entrez dans l'atmosphère pour vous poser"),
+    "odyssea.ship.exit_hint": ("Aboard – %s: leave seat · %s: map · sneak: descend", "À bord – %s : quitter le siège · %s : carte · s'accroupir : descendre"),
+    "odyssea.hud.quantum_travel": ("QUANTUM TRAVEL – %s km to go", "SAUT QUANTIQUE – encore %s km"),
+    "odyssea.map.title": ("Solar System", "Système solaire"),
+    "odyssea.map.set_destination": ("Set as destination", "Définir comme destination"),
+    "odyssea.map.clear_destination": ("Clear", "Effacer"),
+    "odyssea.map.center": ("Center", "Centrer"),
+    "odyssea.map.you": ("You", "Vous"),
+    "odyssea.map.scale": ("Grid: %s", "Grille : %s"),
+    "odyssea.map.kind.star": ("Star", "Étoile"),
+    "odyssea.map.kind.rocky": ("Rocky planet", "Planète rocheuse"),
+    "odyssea.map.kind.gas_giant": ("Gas giant", "Géante gazeuse"),
+    "odyssea.map.kind.ice_giant": ("Ice giant", "Géante de glaces"),
+    "odyssea.map.kind.moon": ("Moon", "Lune"),
+    "odyssea.map.kind.belt": ("Asteroid field", "Champ d'astéroïdes"),
+    "odyssea.map.distance": ("Distance", "Distance"),
+    "odyssea.map.landable": ("Landing", "Atterrissage"),
+    "odyssea.map.gravity": ("Gravity", "Gravité"),
+    "odyssea.map.atmosphere": ("Atmosphere", "Atmosphère"),
+    "odyssea.map.atmosphere.yes": ("yes", "oui"),
+    "odyssea.map.atmosphere.no": ("vacuum", "vide"),
+    "odyssea.map.travel_time": ("Quantum jump", "Saut quantique"),
+    "odyssea.map.quantum_cost": ("Quantum fuel needed", "Carburant quantique requis"),
+    "odyssea.map.quantum_fuel": ("Quantum fuel on board", "Carburant à bord"),
+    "odyssea.map.help": ("Click a body to select it, double-click to zoom on it. Drag to pan, scroll to zoom. Fly into a planet's atmosphere to land; climb above Y 1960 to reach space.",
+                         "Cliquez sur un astre pour le sélectionner, double-cliquez pour zoomer dessus. Glissez pour vous déplacer, molette pour zoomer. Entrez dans l'atmosphère d'une planète pour vous y poser ; montez au-dessus de Y 1960 pour rejoindre l'espace."),
+    "odyssea.map.current_destination": ("Destination: %s", "Destination : %s"),
+}
+
+
+def main():
+    entries = dict(STRINGS)
+    for key, names in BODIES.items():
+        entries[f"odyssea.body.{key}"] = names
+    for key, texts in DESCRIPTIONS.items():
+        entries[f"odyssea.map.desc.{key}"] = texts
+    for lang, index in (("en_us", 0), ("fr_fr", 1)):
+        path = LANG / f"{lang}.json"
+        data = json.loads(path.read_text(encoding="utf-8"))
+        for key, values in entries.items():
+            data[key] = values[index]
+        path.write_text(json.dumps(data, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"{len(entries)} entrées par langue")
+
+
+if __name__ == "__main__":
+    main()

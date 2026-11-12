@@ -1,0 +1,41 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:add",
+      "argument1": {
+        "type": "odyssea:volcanoes",
+        "noise": "odyssea:seed",
+        "salt": "mars/tharsis",
+        "cell_size": 9000.0,
+        "chance": 0.5,
+        "min_radius": 1100.0,
+        "max_radius": 1800.0,
+        "size_power": 1.2,
+        "height_ratio": 0.1,
+        "shape": "shield",
+        "scarp": 0.22,
+        "caldera_ratio": 0.09,
+        "caldera_depth": 0.12,
+        "irregularity": 0.1
+      },
+      "argument2": {
+        "type": "odyssea:volcanoes",
+        "noise": "odyssea:seed",
+        "salt": "mars/paterae",
+        "cell_size": 2200.0,
+        "chance": 0.35,
+        "min_radius": 220.0,
+        "max_radius": 500.0,
+        "size_power": 1.5,
+        "height_ratio": 0.12,
+        "shape": "shield",
+        "scarp": 0.0,
+        "caldera_ratio": 0.15,
+        "caldera_depth": 0.15,
+        "irregularity": 0.1
+      }
+    }
+  }
+}

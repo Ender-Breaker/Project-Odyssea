@@ -1,0 +1,11 @@
+{
+  "replace": false,
+  "values": [
+    "odyssea:lunar_regolith",
+    "odyssea:lunar_mare_regolith",
+    "odyssea:mercurian_regolith",
+    "odyssea:venusian_regolith",
+    "odyssea:martian_regolith",
+    "odyssea:ice_slush"
+  ]
+}

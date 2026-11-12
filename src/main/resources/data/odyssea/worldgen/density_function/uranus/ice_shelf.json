@@ -1,0 +1,43 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:spline",
+      "spline": {
+        "coordinate": {
+          "type": "odyssea:fractal",
+          "noise": "odyssea:seed",
+          "salt": "uranus/shelves",
+          "mode": "fbm",
+          "scale": 2400.0,
+          "octaves": 4,
+          "warp": 550.0,
+          "warp_scale": 1800.0
+        },
+        "points": [
+          {
+            "location": -1.0,
+            "value": 0.0,
+            "derivative": 0.0
+          },
+          {
+            "location": -0.08,
+            "value": 0.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 0.12,
+            "value": 1.0,
+            "derivative": 0.0
+          },
+          {
+            "location": 1.0,
+            "value": 1.0,
+            "derivative": 0.0
+          }
+        ]
+      }
+    }
+  }
+}

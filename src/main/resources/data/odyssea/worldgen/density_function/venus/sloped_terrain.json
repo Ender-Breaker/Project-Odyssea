@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:cache_once",
+  "argument": {
+    "type": "minecraft:add",
+    "argument1": "odyssea:venus/slope",
+    "argument2": {
+      "type": "minecraft:mul",
+      "argument1": {
+        "type": "minecraft:add",
+        "argument1": 0.3,
+        "argument2": {
+          "type": "minecraft:mul",
+          "argument1": 0.9,
+          "argument2": "odyssea:venus/tesserae_mask"
+        }
+      },
+      "argument2": {
+        "type": "minecraft:noise",
+        "noise": "odyssea:planet/crag",
+        "xz_scale": 1.0,
+        "y_scale": 0.7
+      }
+    }
+  }
+}

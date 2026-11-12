@@ -1,0 +1,18 @@
+{
+  "type": "odyssea:neptune",
+  "generator": {
+    "type": "minecraft:flat",
+    "settings": {
+      "biome": "odyssea:neptune_cloud_deck",
+      "layers": [
+        {
+          "block": "minecraft:air",
+          "height": 1
+        }
+      ],
+      "lakes": false,
+      "features": false,
+      "structure_overrides": []
+    }
+  }
+}

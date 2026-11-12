@@ -1,0 +1,119 @@
+{
+  "type": "minecraft:flat_cache",
+  "argument": {
+    "type": "minecraft:cache_2d",
+    "argument": {
+      "type": "minecraft:clamp",
+      "input": {
+        "type": "odyssea:carve",
+        "input": "odyssea:terra/land",
+        "floor": {
+          "type": "minecraft:add",
+          "argument1": 58.0,
+          "argument2": {
+            "type": "minecraft:mul",
+            "argument1": {
+              "type": "minecraft:mul",
+              "argument1": "odyssea:terra/mountain_envelope",
+              "argument2": {
+                "type": "minecraft:spline",
+                "spline": {
+                  "coordinate": "odyssea:terra/continents",
+                  "points": [
+                    {
+                      "location": 0.02,
+                      "value": 0.0,
+                      "derivative": 0.0
+                    },
+                    {
+                      "location": 0.45,
+                      "value": 1.0,
+                      "derivative": 0.0
+                    }
+                  ]
+                }
+              }
+            },
+            "argument2": 60.0
+          }
+        },
+        "weight": {
+          "type": "minecraft:mul",
+          "argument1": {
+            "type": "minecraft:spline",
+            "spline": {
+              "coordinate": "odyssea:terra/ridges",
+              "points": [
+                {
+                  "location": -0.14,
+                  "value": 0.0,
+                  "derivative": 0.0
+                },
+                {
+                  "location": -0.07,
+                  "value": 0.25,
+                  "derivative": 0.0
+                },
+                {
+                  "location": -0.035,
+                  "value": 0.7,
+                  "derivative": 0.0
+                },
+                {
+                  "location": -0.012,
+                  "value": 0.96,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 0.0,
+                  "value": 1.0,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 0.012,
+                  "value": 0.96,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 0.035,
+                  "value": 0.7,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 0.07,
+                  "value": 0.25,
+                  "derivative": 0.0
+                },
+                {
+                  "location": 0.14,
+                  "value": 0.0,
+                  "derivative": 0.0
+                }
+              ]
+            }
+          },
+          "argument2": {
+            "type": "minecraft:spline",
+            "spline": {
+              "coordinate": "odyssea:terra/continents",
+              "points": [
+                {
+                  "location": -0.21,
+                  "value": 0.0,
+                  "derivative": 0.0
+                },
+                {
+                  "location": -0.17,
+                  "value": 1.0,
+                  "derivative": 0.0
+                }
+              ]
+            }
+          }
+        }
+      },
+      "min": -24.0,
+      "max": 388.0
+    }
+  }
+}

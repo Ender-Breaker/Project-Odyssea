@@ -1,0 +1,21 @@
+{
+  "variants": {
+    "": [
+      {
+        "model": "odyssea:block/martian_regolith"
+      },
+      {
+        "model": "odyssea:block/martian_regolith",
+        "y": 90
+      },
+      {
+        "model": "odyssea:block/martian_regolith",
+        "y": 180
+      },
+      {
+        "model": "odyssea:block/martian_regolith",
+        "y": 270
+      }
+    ]
+  }
+}
